@@ -1,7 +1,7 @@
 {
   "name": "pulumi-authoring",
   "version": "1.0.0",
-  "description": "Write quality Pulumi programs, components, and automation",
+  "description": "Write quality Pulumi programs, components, automation, and secrets management with ESC",
   "author": {
     "name": "Pulumi",
     "url": "https://github.com/pulumi"
@@ -13,7 +13,10 @@
     "pulumi",
     "best-practices",
     "component",
-    "automation-api"
+    "automation-api",
+    "esc",
+    "secrets",
+    "configuration"
   ],
   "mcpServers": {
     "pulumi": {

@@ -4,7 +4,7 @@ This repository contains official Pulumi agent skills for infrastructure as code
 
 ## Repository Structure
 
-Skills are organized into three plugin groups:
+Skills are organized into two plugin groups:
 
 ### Migration Plugin (`migration/`)
 
@@ -20,16 +20,11 @@ Skills for converting and importing infrastructure from other tools to Pulumi:
 
 ### Authoring Plugin (`authoring/`)
 
-Skills for writing quality Pulumi programs:
+Skills for writing quality Pulumi programs, components, automation, and secrets management:
 
 - **pulumi-best-practices**: Best practices for writing reliable Pulumi programs
 - **pulumi-component**: Guide for authoring ComponentResource classes
 - **pulumi-automation-api**: Best practices for using Pulumi Automation API
-
-### Configuration Plugin (`configuration/`)
-
-Skills for managing secrets and configuration:
-
 - **esc**: Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration)
 
 ## Installation
@@ -40,13 +35,21 @@ Skills for managing secrets and configuration:
 /plugin marketplace add pulumi/agent-skills
 /plugin install pulumi-migration
 /plugin install pulumi-authoring
-/plugin install pulumi-configuration
 ```
 
 ### Universal (all agents)
 
+Install all skills:
+
 ```bash
 npx skills add pulumi/agent-skills
+```
+
+Or install individual plugin groups:
+
+```bash
+npx skills add pulumi/agent-skills/migration      # 7 migration skills
+npx skills add pulumi/agent-skills/authoring      # 4 authoring skills
 ```
 
 This works with Claude Code, Cursor, Copilot, Codex, and other agent tools.
@@ -80,7 +83,7 @@ Keep the main SKILL.md file focused and concise (under 500 lines recommended). F
 
 ## Adding a New Skill
 
-1. Determine which plugin group the skill belongs to (migration, authoring, or configuration)
+1. Determine which plugin group the skill belongs to (migration or authoring)
 2. Create the skill directory: `<plugin>/skills/<skill-name>/`
 3. Write the `SKILL.md` file with proper frontmatter:
    ```yaml

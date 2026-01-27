@@ -19,12 +19,6 @@
       "source": "./authoring",
       "description": "Write quality Pulumi programs, components, and automation",
       "category": "development"
-    },
-    {
-      "name": "pulumi-configuration",
-      "source": "./configuration",
-      "description": "Manage secrets, configuration, and credentials with Pulumi ESC",
-      "category": "configuration"
     }
   ]
 }

@@ -15,13 +15,12 @@ Agent Skills are reusable knowledge packages that teach AI coding assistants dom
 
 ## Repository Structure
 
-Skills are organized into three plugin groups:
+Skills are organized into two plugin groups:
 
 ```
 pulumi-agent-skills/
 ├── migration/          # Convert and import from other tools
-├── authoring/          # Write quality Pulumi programs
-└── configuration/      # Manage secrets and config with ESC
+└── authoring/          # Write quality Pulumi programs
 ```
 
 ## Available Skills
@@ -42,21 +41,14 @@ Convert and import infrastructure from other tools to Pulumi:
 
 ### Authoring Plugin
 
-Write quality Pulumi programs, components, and automation:
+Write quality Pulumi programs, components, automation, and secrets management:
 
 | Skill | Description |
 |-------|-------------|
 | [pulumi-best-practices](authoring/skills/pulumi-best-practices) | Best practices for writing reliable Pulumi programs |
 | [pulumi-component](authoring/skills/pulumi-component) | Guide for authoring ComponentResource classes |
 | [pulumi-automation-api](authoring/skills/pulumi-automation-api) | Best practices for using Pulumi Automation API |
-
-### Configuration Plugin
-
-Manage secrets, configuration, and credentials:
-
-| Skill | Description |
-|-------|-------------|
-| [esc](configuration/skills/pulumi-esc) | Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration) |
+| [esc](authoring/skills/pulumi-esc) | Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration) |
 
 ## Installation
 
@@ -66,15 +58,23 @@ Manage secrets, configuration, and credentials:
 /plugin marketplace add pulumi/agent-skills
 /plugin install pulumi-migration     # Install migration skills
 /plugin install pulumi-authoring     # Install authoring skills
-/plugin install pulumi-configuration # Install configuration skills
 ```
 
 This also configures the [Pulumi MCP server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/), giving your agent access to your Pulumi Cloud organization data.
 
 ### Universal (all agents)
 
+Install all skills:
+
 ```bash
 npx skills add pulumi/agent-skills
+```
+
+Or install individual plugin groups:
+
+```bash
+npx skills add pulumi/agent-skills/migration      # 7 migration skills
+npx skills add pulumi/agent-skills/authoring      # 4 authoring skills
 ```
 
 This works with Claude Code, Cursor, Copilot, Codex, Gemini CLI, and other agent tools.
