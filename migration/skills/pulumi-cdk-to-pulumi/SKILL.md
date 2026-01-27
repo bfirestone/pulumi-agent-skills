@@ -105,7 +105,7 @@ Extract:
 
 ### 2. CODE CONVERSION (CDK → PULUMI)
 
-Always start with automated conversion using the `cdk2pulumi` tool. You MUST load the `cdk-convert` skill when you need to perform the conversion.
+Always start with automated conversion using the `cdk2pulumi` tool. Use skill `pulumi-cdk-convert` to perform the conversion.
 
 - Perform the initial conversion using the `cdk2pulumi` tool.
 - Read the conversion report and fill in any gaps. For example, if the conversion fails to convert a resource you have to convert it manually yourself.
@@ -213,13 +213,12 @@ if (currentEnv.createVpc) {
 
 After conversion you can optionally import the existing resources to now be managed by Pulumi. If the user does not request this you should suggest this as a follow up step to conversion.
 
-- Always start with automated import using the `cdk-importer` tool. You MUST load the `cdk-importer` skill when you need to perform the automated import.
-- Perform the initial import using the `cdk-importer` skill.
-- For any resources that fail to import with the `cdk-importer` tool you have to import them manually.
+- Always start with automated import. Use skill `pulumi-cdk-importer` to perform the automated import.
+- For any resources that fail to import with the automated tool, import them manually.
 
 If you need to manually import resources:
 
-- Load the `cloudformation-id-lookup` tool
+- Use skill `pulumi-cloudformation-id-lookup` to look up CloudFormation import identifiers
 - Use the web-fetch tool to get content from the official Pulumi documentation.
 
 - **Finding AWS import IDs** -> <https://www.pulumi.com/docs/iac/guides/migration/aws-import-ids/>

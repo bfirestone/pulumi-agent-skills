@@ -1,0 +1,31 @@
+{
+  "name": "pulumi-configuration",
+  "version": "1.0.0",
+  "description": "Manage secrets, configuration, and credentials with Pulumi ESC",
+  "author": {
+    "name": "Pulumi",
+    "url": "https://github.com/pulumi"
+  },
+  "homepage": "https://www.pulumi.com/docs/esc/",
+  "repository": "https://github.com/pulumi/agent-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pulumi",
+    "esc",
+    "secrets",
+    "configuration",
+    "oidc"
+  ],
+  "mcpServers": {
+    "pulumi": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pulumi/mcp-server@latest"
+      ],
+      "env": {
+        "PULUMI_ACCESS_TOKEN": "${PULUMI_ACCESS_TOKEN}"
+      }
+    }
+  }
+}

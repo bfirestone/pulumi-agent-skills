@@ -30,7 +30,7 @@ The migration output MUST meet all of the following:
      - NO replaces
      - NO creates
      - NO deletes
-   - Any diffs must be resolved using the Preview Resolution Workflow in the `arm-import` skill.
+   - Any diffs must be resolved using the Preview Resolution Workflow. Use skill `pulumi-arm-import`.
 
 4. **Final Migration Report**
    - Always output a formal migration report suitable for a Pull Request.
@@ -659,9 +659,9 @@ Check the Pulumi Registry documentation for which API version each resource uses
 
 After conversion, you can optionally import existing resources to be managed by Pulumi. If the user does not request this, suggest it as a follow-up step to conversion.
 
-**CRITICAL**: When the user requests importing existing Azure resources into Pulumi, you MUST immediately invoke the `arm-import` skill before proceeding. Use the `skill` tool with the parameter command="arm-import" to load detailed import procedures and zero-diff validation workflows.
+**CRITICAL**: When the user requests importing existing Azure resources into Pulumi, use skill `pulumi-arm-import` for detailed import procedures and zero-diff validation workflows.
 
-The `arm-import` skill provides:
+The `pulumi-arm-import` skill provides:
 
 - Inline import ID patterns and examples
 - Azure Resource ID format conventions
@@ -673,7 +673,7 @@ The `arm-import` skill provides:
 
 1. **Inline Import Approach**:
    - Use `import` resource option with Azure Resource IDs
-   - No separate import tool like `cdk-importer`
+   - No separate import tool (unlike `pulumi-cdk-importer`)
 
 2. **Azure Resource IDs**:
    - Follow predictable pattern: `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}`
@@ -771,4 +771,4 @@ Keep code syntactically valid and clearly separated by files.
 
 ## RELATED SKILLS
 
-- **arm-import**: Importing existing Azure resources with zero-diff validation
+- **pulumi-arm-import**: Importing existing Azure resources with zero-diff validation. Use skill `pulumi-arm-import`.

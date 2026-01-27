@@ -10,43 +10,74 @@ Agent Skills are reusable knowledge packages that teach AI coding assistants dom
 - [GitHub Copilot](https://docs.github.com/en/copilot)
 - [Cursor](https://cursor.sh)
 - [VS Code](https://code.visualstudio.com/docs/copilot)
+- [OpenAI Codex](https://openai.com/api/)
+- [Gemini CLI](https://geminicli.com)
+
+## Repository Structure
+
+Skills are organized into three plugin groups:
+
+```
+pulumi-agent-skills/
+├── migration/          # Convert and import from other tools
+├── authoring/          # Write quality Pulumi programs
+└── configuration/      # Manage secrets and config with ESC
+```
 
 ## Available Skills
 
+### Migration Plugin
+
+Convert and import infrastructure from other tools to Pulumi:
+
 | Skill | Description |
 |-------|-------------|
-| **pulumi-terraform-to-pulumi** | Convert Terraform HCL to Pulumi |
-| **pulumi-cdk-to-pulumi** | Migrate AWS CDK applications to Pulumi |
-| **pulumi-cdk-convert** | Convert CDK Cloud Assemblies to Pulumi YAML |
-| **pulumi-cdk-importer** | Import CDK-managed infrastructure into Pulumi state |
-| **pulumi-arm-to-pulumi** | Convert Azure ARM/Bicep templates to Pulumi |
-| **pulumi-arm-import** | Import existing Azure resources into Pulumi |
-| **pulumi-cloudformation-id-lookup** | Look up Pulumi import ID formats for AWS resources |
-| **pulumi-esc** | Manage Pulumi ESC (Environments, Secrets, Configuration) |
-| **pulumi-best-practices** | Pulumi development patterns and best practices |
-| **pulumi-automation-api** | Programmatic orchestration of Pulumi operations |
+| [pulumi-terraform-to-pulumi](migration/skills/pulumi-terraform-to-pulumi) | Migrate Terraform projects to Pulumi |
+| [pulumi-cdk-to-pulumi](migration/skills/pulumi-cdk-to-pulumi) | Convert AWS CDK applications to Pulumi |
+| [pulumi-cdk-convert](migration/skills/pulumi-cdk-convert) | Automated CDK conversion using the cdk2pulumi tool |
+| [pulumi-cdk-importer](migration/skills/pulumi-cdk-importer) | Automated import of CDK-managed AWS infrastructure |
+| [pulumi-arm-to-pulumi](migration/skills/pulumi-arm-to-pulumi) | Convert Azure ARM templates and Bicep to Pulumi |
+| [pulumi-arm-import](migration/skills/pulumi-arm-import) | Import existing Azure resources into Pulumi |
+| [pulumi-cloudformation-id-lookup](migration/skills/pulumi-cloudformation-id-lookup) | Look up CloudFormation import identifiers |
+
+### Authoring Plugin
+
+Write quality Pulumi programs, components, and automation:
+
+| Skill | Description |
+|-------|-------------|
+| [pulumi-best-practices](authoring/skills/pulumi-best-practices) | Best practices for writing reliable Pulumi programs |
+| [pulumi-component](authoring/skills/pulumi-component) | Guide for authoring ComponentResource classes |
+| [pulumi-automation-api](authoring/skills/pulumi-automation-api) | Best practices for using Pulumi Automation API |
+
+### Configuration Plugin
+
+Manage secrets, configuration, and credentials:
+
+| Skill | Description |
+|-------|-------------|
+| [esc](configuration/skills/pulumi-esc) | Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration) |
 
 ## Installation
 
-Install using the add-skill CLI:
+### Claude Code Plugin System
 
 ```bash
-npx add-skill pulumi/agent-skills
+/plugin marketplace add pulumi/agent-skills
+/plugin install pulumi-migration     # Install migration skills
+/plugin install pulumi-authoring     # Install authoring skills
+/plugin install pulumi-configuration # Install configuration skills
 ```
 
-Or clone manually to the appropriate skills directory for your tool:
+This also configures the [Pulumi MCP server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/), giving your agent access to your Pulumi Cloud organization data.
 
-| Tool | Personal | Project |
-| --- | --- | --- |
-| Claude Code | `~/.claude/skills/` | `.claude/skills/` |
-| Cursor | `~/.cursor/skills/` | `.cursor/skills/` |
-| GitHub Copilot | - | `.github/skills/` |
-| OpenAI Codex | `~/.codex/skills/` | `.codex/skills/` |
-| Gemini CLI | `~/.gemini/skills/` | `.gemini/skills/` |
+### Universal (all agents)
 
 ```bash
-git clone https://github.com/pulumi/agent-skills.git <skills-directory>/pulumi
+npx skills add pulumi/agent-skills
 ```
+
+This works with Claude Code, Cursor, Copilot, Codex, Gemini CLI, and other agent tools.
 
 ## Usage Examples
 
@@ -72,10 +103,31 @@ The assistant will use the `pulumi-cdk-to-pulumi` skill to guide you through the
 Ask your AI assistant:
 
 ```text
-Set up AWS OIDC credentials using Pulumi ESC"
+Set up AWS OIDC credentials using Pulumi ESC
 ```
 
-The assistant will use the `pulumi-esc` skill to help configure dynamic credentials.
+The assistant will use the `esc` skill to help configure dynamic credentials.
+
+### Writing Components
+
+Ask your AI assistant:
+
+```text
+Help me create a reusable Pulumi component for a web service
+```
+
+The assistant will use the `pulumi-component` skill to guide you through component authoring best practices.
+
+## MCP Server Integration
+
+When you install plugins through Claude Code, the [Pulumi MCP server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/) is automatically configured. This provides:
+
+- Access to your Pulumi Cloud organization data
+- Cross-stack visibility through Pulumi Insights
+- Live infrastructure context
+- Registry schema information
+
+The MCP server requires the `PULUMI_ACCESS_TOKEN` environment variable. [Create an access token](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/) and set it in your shell profile.
 
 ## Contributing
 
@@ -84,6 +136,8 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines 
 - Writing new skills
 - Improving existing skills
 - Reporting issues
+
+Also see [AGENTS.md](AGENTS.md) for agent-specific documentation on skill conventions, cross-skill references, and plugin structure.
 
 ## License
 
@@ -94,3 +148,4 @@ Apache 2.0 - See [LICENSE](LICENSE) for details.
 - [Pulumi Documentation](https://www.pulumi.com/docs/)
 - [Agent Skills Specification](https://agentskills.io/specification)
 - [Pulumi ESC Documentation](https://www.pulumi.com/docs/esc/)
+- [Pulumi MCP Server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/)

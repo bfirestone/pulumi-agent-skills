@@ -177,6 +177,8 @@ const site = new StaticSite("marketing", {
 - Expose outputs as class properties for consumers
 - Accept `ComponentResourceOptions` to allow callers to set providers, aliases, etc.
 
+For in-depth component authoring guidance (args design, multi-language support, testing, distribution), use skill `pulumi-component`.
+
 **Reference**: https://www.pulumi.com/docs/concepts/resources/components/
 
 ---
@@ -493,5 +495,6 @@ When reviewing Pulumi code, verify:
 
 ## Related Skills
 
-- **pulumi-automation-api**: Programmatic orchestration of multiple stacks
-- **pulumi-esc**: Centralized secrets and configuration management
+- **pulumi-component**: Deep guide to authoring ComponentResource classes, designing args interfaces, multi-language support, testing, and distribution. Use skill `pulumi-component`.
+- **pulumi-automation-api**: Programmatic orchestration of multiple stacks. Use skill `pulumi-automation-api`.
+- **esc**: Centralized secrets and configuration management. Use skill `esc`.

@@ -6,15 +6,27 @@ Thank you for your interest in contributing to Pulumi's Agent Skills! This guide
 
 A skill is a markdown file (`SKILL.md`) that teaches AI coding assistants how to help users with specific tasks. Skills follow the [agentskills.io](https://agentskills.io) open standard.
 
-## Skill Format
+## Repository Structure
 
-Each skill lives in its own directory with a `SKILL.md` file:
+Skills are organized into plugin groups:
 
 ```text
-skills/
-└── skill-name/
-    └── SKILL.md
+pulumi-agent-skills/
+├── migration/          # Convert and import from other tools
+│   └── skills/
+│       └── skill-name/
+│           └── SKILL.md
+├── authoring/          # Write quality Pulumi programs
+│   └── skills/
+│       └── skill-name/
+│           └── SKILL.md
+└── configuration/      # Manage secrets and config with ESC
+    └── skills/
+        └── skill-name/
+            └── SKILL.md
 ```
+
+See [AGENTS.md](AGENTS.md) for detailed information on plugin structure, cross-skill references, and skill conventions.
 
 ### SKILL.md Structure
 
@@ -187,13 +199,18 @@ Before submitting a skill, verify:
 
 ### New Skills
 
-1. Create a new directory under `skills/` with the skill name
-2. Add a `SKILL.md` file following the format above
-3. Test the skill with at least one AI coding assistant
-4. Submit a pull request with:
+1. Determine which plugin group the skill belongs to (migration, authoring, or configuration)
+2. Create a new directory under `<plugin>/skills/` with the skill name
+3. Add a `SKILL.md` file following the format above
+4. Update [AGENTS.md](AGENTS.md) to list the new skill in the appropriate plugin section
+5. Update [README.md](README.md) to add the skill to the skills table
+6. Test the skill with at least one AI coding assistant
+7. Submit a pull request with:
    - Description of what the skill does
    - Example prompts that trigger the skill
    - Testing notes
+
+The skill will automatically be included in its plugin group. No manifest updates are needed.
 
 ### Improving Existing Skills
 

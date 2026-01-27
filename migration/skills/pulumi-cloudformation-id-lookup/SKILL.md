@@ -1,6 +1,7 @@
 ---
 name: pulumi-cloudformation-id-lookup
 description: Look up information on Pulumi import identifiers for AWS CloudFormation resources
+user-invocable: false
 ---
 
 # Pulumi Import ID Lookup (`cdk2pulumi ids`)

@@ -1,0 +1,32 @@
+{
+  "name": "pulumi-migration",
+  "version": "1.0.0",
+  "description": "Convert and import infrastructure from Terraform, CDK, ARM, and CloudFormation to Pulumi",
+  "author": {
+    "name": "Pulumi",
+    "url": "https://github.com/pulumi"
+  },
+  "homepage": "https://www.pulumi.com/docs/",
+  "repository": "https://github.com/pulumi/agent-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pulumi",
+    "terraform",
+    "cdk",
+    "arm",
+    "migration",
+    "import"
+  ],
+  "mcpServers": {
+    "pulumi": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pulumi/mcp-server@latest"
+      ],
+      "env": {
+        "PULUMI_ACCESS_TOKEN": "${PULUMI_ACCESS_TOKEN}"
+      }
+    }
+  }
+}

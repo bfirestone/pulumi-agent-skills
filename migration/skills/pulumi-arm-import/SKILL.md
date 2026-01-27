@@ -1,6 +1,7 @@
 ---
 name: pulumi-arm-import
 description: Import existing Azure resources into Pulumi. This skill MUST be loaded whenever importing Azure resources into Pulumi management, resolving import preview diffs, or achieving zero-diff after import. Handles both ARM-deployed and manually-created Azure resources.
+user-invocable: false
 ---
 
 ## OVERVIEW

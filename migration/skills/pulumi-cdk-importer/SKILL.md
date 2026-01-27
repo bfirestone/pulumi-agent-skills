@@ -1,6 +1,7 @@
 ---
 name: pulumi-cdk-importer
 description: Automated import of CDK-managed AWS infrastructure into Pulumi state
+user-invocable: false
 ---
 
 # Pulumi CDK Importer Tool

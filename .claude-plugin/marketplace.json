@@ -1,0 +1,30 @@
+{
+  "name": "pulumi-agent-skills",
+  "owner": {
+    "name": "Pulumi"
+  },
+  "metadata": {
+    "description": "Official Pulumi agent skills for infrastructure as code workflows",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "pulumi-migration",
+      "source": "./migration",
+      "description": "Convert and import infrastructure from Terraform, CDK, ARM, and CloudFormation to Pulumi",
+      "category": "integration"
+    },
+    {
+      "name": "pulumi-authoring",
+      "source": "./authoring",
+      "description": "Write quality Pulumi programs, components, and automation",
+      "category": "development"
+    },
+    {
+      "name": "pulumi-configuration",
+      "source": "./configuration",
+      "description": "Manage secrets, configuration, and credentials with Pulumi ESC",
+      "category": "configuration"
+    }
+  ]
+}

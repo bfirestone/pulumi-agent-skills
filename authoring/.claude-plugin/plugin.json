@@ -1,0 +1,30 @@
+{
+  "name": "pulumi-authoring",
+  "version": "1.0.0",
+  "description": "Write quality Pulumi programs, components, and automation",
+  "author": {
+    "name": "Pulumi",
+    "url": "https://github.com/pulumi"
+  },
+  "homepage": "https://www.pulumi.com/docs/",
+  "repository": "https://github.com/pulumi/agent-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pulumi",
+    "best-practices",
+    "component",
+    "automation-api"
+  ],
+  "mcpServers": {
+    "pulumi": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pulumi/mcp-server@latest"
+      ],
+      "env": {
+        "PULUMI_ACCESS_TOKEN": "${PULUMI_ACCESS_TOKEN}"
+      }
+    }
+  }
+}
