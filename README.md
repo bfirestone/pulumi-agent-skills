@@ -24,7 +24,7 @@ pulumi-agent-skills/
 
 ## Available Skills
 
-### Migration Plugin
+### Migration Skills
 
 Convert and import infrastructure from other tools to Pulumi:
 
@@ -34,7 +34,7 @@ Convert and import infrastructure from other tools to Pulumi:
 | [pulumi-cdk-to-pulumi](migration/skills/pulumi-cdk-to-pulumi) | Convert AWS CDK applications to Pulumi |
 | [pulumi-arm-to-pulumi](migration/skills/pulumi-arm-to-pulumi) | Convert Azure ARM templates and Bicep to Pulumi |
 
-### Authoring Plugin
+### Authoring Skills
 
 Write quality Pulumi programs, components, automation, and secrets management:
 
