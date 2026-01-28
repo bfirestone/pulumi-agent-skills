@@ -1,11 +1,12 @@
 ---
-name: arm-to-pulumi
+name: pulumi-arm-to-pulumi
 description: Convert or migrate Azure ARM (Azure Resource Manager) templates, Bicep templates, or code to Pulumi, including importing existing Azure resources. This skill MUST be loaded whenever a user requests migration, conversion, or import of ARM templates, Bicep templates, ARM code, Bicep code, or Azure resources to Pulumi.
 ---
 
 ## IMPORTANT: PLAN ADJUSTMENT REQUIRED
 
 **If you have already generated a migration plan before loading this skill, you MUST:**
+
 1. Review your existing plan against the workflows and requirements in this skill
 2. Identify any gaps, missing steps, or incorrect assumptions
 3. Update and revise your plan to align with this skill's guidance
@@ -29,7 +30,7 @@ The migration output MUST meet all of the following:
      - NO replaces
      - NO creates
      - NO deletes
-   - Any diffs must be resolved using the Preview Resolution Workflow in the `arm-import` skill.
+   - Any diffs must be resolved using the Preview Resolution Workflow. Use skill `pulumi-arm-import`.
 
 4. **Final Migration Report**
    - Always output a formal migration report suitable for a Pull Request.
@@ -60,6 +61,7 @@ Running Azure CLI commands (e.g., `az resource list`, `az resource show`). Requi
 - If no ESC environment is specified, **ask the user which ESC environment to use** before proceeding with Azure CLI commands.
 
 **Setting up Azure CLI using ESC:**
+
 - ESC environments can provide Azure credentials through environment variables or Azure CLI configuration
 - Login to Azure using ESC to provide credentials, e.g: `pulumi env run {org}/{project}/{environment} -- bash -c 'az login --service-principal -u "$ARM_CLIENT_ID" --tenant "$ARM_TENANT_ID" --federated-token "$ARM_OIDC_TOKEN"'`. ESC is not required after establishing the session
 - Verify credentials are working: `az account show`
@@ -83,6 +85,7 @@ cat template.json | jq '.variables'
 ```
 
 Extract:
+
 - Resource types and names
 - Parameters and their default values
 - Variables and expressions
@@ -656,9 +659,9 @@ Check the Pulumi Registry documentation for which API version each resource uses
 
 After conversion, you can optionally import existing resources to be managed by Pulumi. If the user does not request this, suggest it as a follow-up step to conversion.
 
-**CRITICAL**: When the user requests importing existing Azure resources into Pulumi, you MUST immediately invoke the `arm-import` skill before proceeding. Use the `skill` tool with the parameter command="arm-import" to load detailed import procedures and zero-diff validation workflows.
+**CRITICAL**: When the user requests importing existing Azure resources into Pulumi, use skill `pulumi-arm-import` for detailed import procedures and zero-diff validation workflows.
 
-The `arm-import` skill provides:
+The `pulumi-arm-import` skill provides:
 
 - Inline import ID patterns and examples
 - Azure Resource ID format conventions
@@ -670,7 +673,7 @@ The `arm-import` skill provides:
 
 1. **Inline Import Approach**:
    - Use `import` resource option with Azure Resource IDs
-   - No separate import tool like `cdk-importer`
+   - No separate import tool (unlike `pulumi-cdk-importer`)
 
 2. **Azure Resource IDs**:
    - Follow predictable pattern: `/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}`
@@ -768,4 +771,4 @@ Keep code syntactically valid and clearly separated by files.
 
 ## RELATED SKILLS
 
-- **arm-import**: Importing existing Azure resources with zero-diff validation
+- **pulumi-arm-import**: Importing existing Azure resources with zero-diff validation. Use skill `pulumi-arm-import`.

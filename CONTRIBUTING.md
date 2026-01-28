@@ -6,15 +6,23 @@ Thank you for your interest in contributing to Pulumi's Agent Skills! This guide
 
 A skill is a markdown file (`SKILL.md`) that teaches AI coding assistants how to help users with specific tasks. Skills follow the [agentskills.io](https://agentskills.io) open standard.
 
-## Skill Format
+## Repository Structure
 
-Each skill lives in its own directory with a `SKILL.md` file:
+Skills are organized into plugin groups:
 
 ```text
-skills/
-└── skill-name/
-    └── SKILL.md
+pulumi-agent-skills/
+├── migration/          # Convert and import from other tools
+│   └── skills/
+│       └── skill-name/
+│           └── SKILL.md
+└── authoring/          # Write quality Pulumi programs
+    └── skills/
+        └── skill-name/
+            └── SKILL.md
 ```
+
+See [AGENTS.md](AGENTS.md) for detailed information on plugin structure, cross-skill references, and skill conventions.
 
 ### SKILL.md Structure
 
@@ -33,14 +41,14 @@ Skill content here...
 
 | Field | Description |
 |-------|-------------|
-| `name` | Lowercase with hyphens, must match directory name |
-| `description` | When the AI should use this skill (1-2 sentences) |
+| `name`        | Lowercase with hyphens, must match directory name  |
+| `description` | When the AI should use this skill (1-2 sentences)  |
 
 ### Optional Frontmatter
 
-| Field | Description |
-|-------|-------------|
-| `version` | Semantic version (e.g., "1.0.0") |
+| Field     | Description                                        |
+|-----------|----------------------------------------------------|
+| `version` | Semantic version (e.g., "1.0.0")                   |
 | `author` | Author name or organization |
 | `license` | License identifier (defaults to repository license) |
 
@@ -129,17 +137,18 @@ Guide users through common failure scenarios:
 This usually means the resource ID format is incorrect. Use `pulumi plugin run cdk2pulumi -- ids <resource-type>` to find the correct format.
 ```
 
-
 ## Standalone Requirement
 
 **Skills must work without proprietary tools or internal APIs.**
 
 ### Do
+
 - Reference publicly available CLI tools
 - Link to public documentation
 - Use standard credential methods (env vars, config files)
 
 ### Don't
+
 - Reference internal APIs or tools
 - Assume specific organizational context
 - Require proprietary services not available to all users
@@ -186,13 +195,18 @@ Before submitting a skill, verify:
 
 ### New Skills
 
-1. Create a new directory under `skills/` with the skill name
-2. Add a `SKILL.md` file following the format above
-3. Test the skill with at least one AI coding assistant
-4. Submit a pull request with:
+1. Determine which plugin group the skill belongs to (migration or authoring)
+2. Create a new directory under `<plugin>/skills/` with the skill name
+3. Add a `SKILL.md` file following the format above
+4. Update [AGENTS.md](AGENTS.md) to list the new skill in the appropriate plugin section
+5. Update [README.md](README.md) to add the skill to the skills table
+6. Test the skill with at least one AI coding assistant
+7. Submit a pull request with:
    - Description of what the skill does
    - Example prompts that trigger the skill
    - Testing notes
+
+The skill will automatically be included in its plugin group. No manifest updates are needed.
 
 ### Improving Existing Skills
 
@@ -206,6 +220,7 @@ Before submitting a skill, verify:
 ### Reporting Issues
 
 Open an issue with:
+
 - Which skill has the problem
 - What you expected to happen
 - What actually happened

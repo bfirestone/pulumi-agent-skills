@@ -10,64 +10,76 @@ Agent Skills are reusable knowledge packages that teach AI coding assistants dom
 - [GitHub Copilot](https://docs.github.com/en/copilot)
 - [Cursor](https://cursor.sh)
 - [VS Code](https://code.visualstudio.com/docs/copilot)
+- [OpenAI Codex](https://openai.com/api/)
+
+## Repository Structure
+
+Skills are organized into two plugin groups:
+
+```
+pulumi-agent-skills/
+├── migration/          # Convert and import from other tools
+└── authoring/          # Write quality Pulumi programs
+```
 
 ## Available Skills
 
-| Skill | Description | Prerequisites |
-|-------|-------------|---------------|
-| **terraform-translation** | Convert Terraform HCL to Pulumi TypeScript | Pulumi CLI, Node.js |
-| **cdk-to-pulumi** | Migrate AWS CDK applications to Pulumi | Pulumi CLI, AWS CDK, cdk2pulumi plugin |
-| **cdk-convert** | Convert CDK Cloud Assemblies to Pulumi YAML | Pulumi CLI, cdk2pulumi plugin |
-| **cdk-importer** | Import CDK-managed infrastructure into Pulumi state | Pulumi CLI, cdk-importer plugin, AWS credentials |
-| **cloudformation-id-lookup** | Look up Pulumi import ID formats for AWS resources | Pulumi CLI, cdk2pulumi plugin |
-| **esc** | Manage Pulumi ESC (Environments, Secrets, Configuration) | Pulumi CLI |
+### Migration Plugin
+
+Convert and import infrastructure from other tools to Pulumi:
+
+| Skill | Description |
+|-------|-------------|
+| [pulumi-terraform-to-pulumi](migration/skills/pulumi-terraform-to-pulumi) | Migrate Terraform projects to Pulumi |
+| [pulumi-cdk-to-pulumi](migration/skills/pulumi-cdk-to-pulumi) | Convert AWS CDK applications to Pulumi |
+| [pulumi-arm-to-pulumi](migration/skills/pulumi-arm-to-pulumi) | Convert Azure ARM templates and Bicep to Pulumi |
+
+### Authoring Plugin
+
+Write quality Pulumi programs, components, automation, and secrets management:
+
+| Skill | Description |
+|-------|-------------|
+| [pulumi-best-practices](authoring/skills/pulumi-best-practices) | Best practices for writing reliable Pulumi programs |
+| [pulumi-component](authoring/skills/pulumi-component) | Guide for authoring ComponentResource classes |
+| [pulumi-automation-api](authoring/skills/pulumi-automation-api) | Best practices for using Pulumi Automation API |
+| [esc](authoring/skills/pulumi-esc) | Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration) |
 
 ## Installation
 
-### Claude Code
-
-Add to your Claude Code settings (`~/.claude/settings.json`):
-
-```json
-{
-  "skills": [
-    "pulumi/skills"
-  ]
-}
-```
-
-Or add to a project's `.claude/settings.json` for project-specific skills.
-
-### GitHub Copilot / VS Code
-
-Clone or download skills to your project's `.github/skills/` directory:
+### Claude Code Plugin System
 
 ```bash
-git clone https://github.com/pulumi/skills.git .github/skills/pulumi
+/plugin marketplace add pulumi/agent-skills
+/plugin install pulumi-migration     # Install migration skills
+/plugin install pulumi-authoring     # Install authoring skills
 ```
 
-Or to your personal skills directory:
+### Universal (all agents)
+
+Install all skills:
 
 ```bash
-git clone https://github.com/pulumi/skills.git ~/.copilot/skills/pulumi
+npx skills add pulumi/agent-skills
 ```
 
-### Cursor
-
-Add to your project's `.cursor/skills/` directory:
+Or install individual plugin groups:
 
 ```bash
-git clone https://github.com/pulumi/skills.git .cursor/skills/pulumi
+npx skills add pulumi/agent-skills/migration      # 7 migration skills
+npx skills add pulumi/agent-skills/authoring      # 4 authoring skills
 ```
+
+This works with Claude Code, Cursor, Copilot, Codex, and other agent tools.
 
 ## Usage Examples
 
 ### Terraform to Pulumi Migration
 
-Ask your Aagent:
+Ask your AI assistant:
 > "Convert this Terraform configuration to Pulumi TypeScript"
 
-The assistant will use the `terraform-translation` skill to produce idiomatic Pulumi code.
+The assistant will use the `pulumi-terraform-to-pulumi` skill to produce idiomatic Pulumi code.
 
 ### CDK to Pulumi Migration
 
@@ -77,17 +89,27 @@ Ask your AI assistant:
 Help me migrate my CDK application to Pulumi
 ```
 
-The assistant will use the `cdk-to-pulumi` skill to guide you through the complete migration workflow.
+The assistant will use the `pulumi-cdk-to-pulumi` skill to guide you through the complete migration workflow.
 
 ### Managing Secrets with ESC
 
 Ask your AI assistant:
 
 ```text
-Set up AWS OIDC credentials using Pulumi ESC"
+Set up AWS OIDC credentials using Pulumi ESC
 ```
 
 The assistant will use the `esc` skill to help configure dynamic credentials.
+
+### Writing Components
+
+Ask your AI assistant:
+
+```text
+Help me create a reusable Pulumi component for a web service
+```
+
+The assistant will use the `pulumi-component` skill to guide you through component authoring best practices.
 
 ## Contributing
 
@@ -96,6 +118,8 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines 
 - Writing new skills
 - Improving existing skills
 - Reporting issues
+
+Also see [AGENTS.md](AGENTS.md) for agent-specific documentation on skill conventions, cross-skill references, and plugin structure.
 
 ## License
 
