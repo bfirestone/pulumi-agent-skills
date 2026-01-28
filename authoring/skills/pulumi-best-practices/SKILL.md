@@ -497,4 +497,4 @@ When reviewing Pulumi code, verify:
 
 - **pulumi-component**: Deep guide to authoring ComponentResource classes, designing args interfaces, multi-language support, testing, and distribution. Use skill `pulumi-component`.
 - **pulumi-automation-api**: Programmatic orchestration of multiple stacks. Use skill `pulumi-automation-api`.
-- **esc**: Centralized secrets and configuration management. Use skill `esc`.
+- **pulumi-esc**: Centralized secrets and configuration management. Use skill `pulumi-esc`.

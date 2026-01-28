@@ -25,7 +25,7 @@ Skills for writing quality Pulumi programs, components, automation, and secrets 
 - **pulumi-best-practices**: Best practices for writing reliable Pulumi programs
 - **pulumi-component**: Guide for authoring ComponentResource classes
 - **pulumi-automation-api**: Best practices for using Pulumi Automation API
-- **esc**: Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration)
+- **pulumi-esc**: Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration)
 
 ## Installation
 
@@ -66,7 +66,7 @@ Examples:
 
 ### Skill Name Format
 
-Skill names follow the pattern: `pulumi-<feature>` or just `<feature>` for short names like `esc`.
+Skill names follow the pattern: `pulumi-<feature>`.
 
 ### Trigger Phrases
 
