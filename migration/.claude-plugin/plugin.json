@@ -16,17 +16,5 @@
     "arm",
     "migration",
     "import"
-  ],
-  "mcpServers": {
-    "pulumi": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@pulumi/mcp-server@latest"
-      ],
-      "env": {
-        "PULUMI_ACCESS_TOKEN": "${PULUMI_ACCESS_TOKEN}"
-      }
-    }
-  }
+  ]
 }

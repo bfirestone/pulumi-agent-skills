@@ -55,8 +55,6 @@ Write quality Pulumi programs, components, automation, and secrets management:
 /plugin install pulumi-authoring     # Install authoring skills
 ```
 
-This also configures the [Pulumi MCP server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/), giving your agent access to your Pulumi Cloud organization data.
-
 ### Universal (all agents)
 
 Install all skills:
@@ -113,17 +111,6 @@ Help me create a reusable Pulumi component for a web service
 
 The assistant will use the `pulumi-component` skill to guide you through component authoring best practices.
 
-## MCP Server Integration
-
-When you install plugins through Claude Code, the [Pulumi MCP server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/) is automatically configured. This provides:
-
-- Access to your Pulumi Cloud organization data
-- Cross-stack visibility through Pulumi Insights
-- Live infrastructure context
-- Registry schema information
-
-The MCP server requires the `PULUMI_ACCESS_TOKEN` environment variable. [Create an access token](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/) and set it in your shell profile.
-
 ## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
@@ -143,4 +130,3 @@ Apache 2.0 - See [LICENSE](LICENSE) for details.
 - [Pulumi Documentation](https://www.pulumi.com/docs/)
 - [Agent Skills Specification](https://agentskills.io/specification)
 - [Pulumi ESC Documentation](https://www.pulumi.com/docs/esc/)
-- [Pulumi MCP Server](https://www.pulumi.com/docs/pulumi-cloud/developer-portals/mcp/)

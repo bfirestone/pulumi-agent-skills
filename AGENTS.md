@@ -118,14 +118,7 @@ The skill will automatically be included in its plugin group. No manifest update
      "homepage": "https://www.pulumi.com/docs/",
      "repository": "https://github.com/pulumi/agent-skills",
      "license": "Apache-2.0",
-     "keywords": ["pulumi", "..."],
-     "mcpServers": {
-       "pulumi": {
-         "command": "npx",
-         "args": ["-y", "@pulumi/mcp-server@latest"],
-         "env": { "PULUMI_ACCESS_TOKEN": "${PULUMI_ACCESS_TOKEN}" }
-       }
-     }
+     "keywords": ["pulumi", "..."]
    }
    ```
 
@@ -142,16 +135,6 @@ The skill will automatically be included in its plugin group. No manifest update
 4. Add skills to `<plugin-name>/skills/`
 5. Update this AGENTS.md and README.md
 6. Submit a pull request
-
-## MCP Server Integration
-
-All plugins bundle the Pulumi MCP server configuration. When you install a plugin through Claude Code, the MCP server is automatically configured, providing:
-
-- Access to your Pulumi Cloud organization data
-- Cross-stack visibility through Pulumi Insights
-- Live infrastructure context
-
-The MCP server requires the `PULUMI_ACCESS_TOKEN` environment variable. Set this in your shell profile or Claude Code settings.
 
 ## Contributing
 
