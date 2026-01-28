@@ -67,7 +67,7 @@ Running Azure CLI commands (e.g., `az resource list`, `az resource show`). Requi
 - Verify credentials are working: `az account show`
 - Confirm subscription: `az account list --query "[].{Name:name, SubscriptionId:id, IsDefault:isDefault}" -o table`
 
-**For detailed ESC information:** Load the `esc` skill by calling the tool "Skill" with name = "esc"
+**For detailed ESC information:** Load the `pulumi-esc` skill by calling the tool "Skill" with name = "pulumi-esc"
 
 #### 1.2 Analyze ARM Template Structure
 

@@ -43,7 +43,7 @@ Write quality Pulumi programs, components, automation, and secrets management:
 | [pulumi-best-practices](authoring/skills/pulumi-best-practices) | Best practices for writing reliable Pulumi programs |
 | [pulumi-component](authoring/skills/pulumi-component) | Guide for authoring ComponentResource classes |
 | [pulumi-automation-api](authoring/skills/pulumi-automation-api) | Best practices for using Pulumi Automation API |
-| [esc](authoring/skills/pulumi-esc) | Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration) |
+| [pulumi-esc](authoring/skills/pulumi-esc) | Guidance for working with Pulumi ESC (Environments, Secrets, and Configuration) |
 
 ## Installation
 
@@ -99,7 +99,7 @@ Ask your AI assistant:
 Set up AWS OIDC credentials using Pulumi ESC
 ```
 
-The assistant will use the `esc` skill to help configure dynamic credentials.
+The assistant will use the `pulumi-esc` skill to help configure dynamic credentials.
 
 ### Writing Components
 
