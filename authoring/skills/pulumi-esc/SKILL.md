@@ -140,7 +140,8 @@ User: "How do I set up AWS OIDC credentials in ESC?"
 
 ```bash
 pulumi env init my-org/my-project/dev-config
-pulumi env edit my-org/my-project/dev-config
+# Edit environment (accepts new definition from a file, better for agents, more difficult for users)
+pulumi env edit --file /tmp/example.yml my-org/my-project/dev-config
 ```
 
 ### Linking to Stack
