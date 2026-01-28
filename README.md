@@ -11,7 +11,6 @@ Agent Skills are reusable knowledge packages that teach AI coding assistants dom
 - [Cursor](https://cursor.sh)
 - [VS Code](https://code.visualstudio.com/docs/copilot)
 - [OpenAI Codex](https://openai.com/api/)
-- [Gemini CLI](https://geminicli.com)
 
 ## Repository Structure
 
@@ -33,11 +32,7 @@ Convert and import infrastructure from other tools to Pulumi:
 |-------|-------------|
 | [pulumi-terraform-to-pulumi](migration/skills/pulumi-terraform-to-pulumi) | Migrate Terraform projects to Pulumi |
 | [pulumi-cdk-to-pulumi](migration/skills/pulumi-cdk-to-pulumi) | Convert AWS CDK applications to Pulumi |
-| [pulumi-cdk-convert](migration/skills/pulumi-cdk-convert) | Automated CDK conversion using the cdk2pulumi tool |
-| [pulumi-cdk-importer](migration/skills/pulumi-cdk-importer) | Automated import of CDK-managed AWS infrastructure |
 | [pulumi-arm-to-pulumi](migration/skills/pulumi-arm-to-pulumi) | Convert Azure ARM templates and Bicep to Pulumi |
-| [pulumi-arm-import](migration/skills/pulumi-arm-import) | Import existing Azure resources into Pulumi |
-| [pulumi-cloudformation-id-lookup](migration/skills/pulumi-cloudformation-id-lookup) | Look up CloudFormation import identifiers |
 
 ### Authoring Plugin
 
@@ -77,7 +72,7 @@ npx skills add pulumi/agent-skills/migration      # 7 migration skills
 npx skills add pulumi/agent-skills/authoring      # 4 authoring skills
 ```
 
-This works with Claude Code, Cursor, Copilot, Codex, Gemini CLI, and other agent tools.
+This works with Claude Code, Cursor, Copilot, Codex, and other agent tools.
 
 ## Usage Examples
 
