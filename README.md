@@ -32,6 +32,7 @@ Convert and import infrastructure from other tools to Pulumi:
 |-------|-------------|
 | [pulumi-terraform-to-pulumi](migration/skills/pulumi-terraform-to-pulumi) | Migrate Terraform projects to Pulumi |
 | [pulumi-cdk-to-pulumi](migration/skills/pulumi-cdk-to-pulumi) | Migrate AWS CDK applications to Pulumi |
+| [cloudformation-to-pulumi](migration/skills/cloudformation-to-pulumi) | Migrate AWS CloudFormation stacks/templates to Pulumi |
 | [pulumi-arm-to-pulumi](migration/skills/pulumi-arm-to-pulumi) | Migrate Azure ARM templates and Bicep to Pulumi |
 
 ### Authoring Skills
@@ -66,7 +67,7 @@ npx skills add pulumi/agent-skills
 Or install individual plugin groups:
 
 ```bash
-npx skills add pulumi/agent-skills/migration      # 3 migration skills
+npx skills add pulumi/agent-skills/migration      # 4 migration skills
 npx skills add pulumi/agent-skills/authoring      # 4 authoring skills
 ```
 
