@@ -1,6 +1,6 @@
 # Pulumi Agent Skills
 
-A collection of [Agent Skills](https://agentskills.io) for infrastructure as code workflows with Pulumi. These skills teach AI coding assistants how to help with infrastructure migrations, secret management, and code translation.
+A collection of [Agent Skills](https://agentskills.io) for infrastructure as code workflows with Pulumi. These skills teach AI coding assistants how to help with infrastructure migrations, secret management, and code translation in **TypeScript**, **Go**, and **Python**.
 
 ## What are Agent Skills?
 
@@ -11,6 +11,18 @@ Agent Skills are reusable knowledge packages that teach AI coding assistants dom
 - [Cursor](https://cursor.sh)
 - [VS Code](https://code.visualstudio.com/docs/copilot)
 - [OpenAI Codex](https://openai.com/api/)
+
+## Supported Languages
+
+This skill set provides idiomatic code examples for all three Pulumi general-purpose languages:
+
+| Language | SDK | Project Template |
+|----------|-----|-----------------|
+| TypeScript | `@pulumi/pulumi`, `@pulumi/aws`, ... | `pulumi new typescript` |
+| Go | `github.com/pulumi/pulumi/sdk/v3/go/pulumi`, ... | `pulumi new go` |
+| Python | `pulumi`, `pulumi_aws`, ... | `pulumi new python` |
+
+Each skill contains a language-neutral `SKILL.md` with concepts and workflows, plus language-specific example files (`examples-ts.md`, `examples-go.md`, `examples-python.md`).
 
 ## Repository Structure
 
@@ -78,9 +90,14 @@ This works with Claude Code, Cursor, Copilot, Codex, and other agent tools.
 ### Terraform to Pulumi Migration
 
 Ask your AI assistant:
+
 > "Convert this Terraform configuration to Pulumi TypeScript"
 
-The assistant will use the `pulumi-terraform-to-pulumi` skill to produce idiomatic Pulumi code.
+> "Migrate my Terraform project to Pulumi Go"
+
+> "Rewrite this Terraform in Pulumi Python"
+
+The assistant will use the `pulumi-terraform-to-pulumi` skill to produce idiomatic Pulumi code in your chosen language.
 
 ### CDK to Pulumi Migration
 
@@ -110,7 +127,7 @@ Ask your AI assistant:
 Help me create a reusable Pulumi component for a web service
 ```
 
-The assistant will use the `pulumi-component` skill to guide you through component authoring best practices.
+The assistant will use the `pulumi-component` skill to guide you through component authoring best practices in your preferred language.
 
 ## Contributing
 
@@ -131,3 +148,6 @@ Apache 2.0 - See [LICENSE](LICENSE) for details.
 - [Pulumi Documentation](https://www.pulumi.com/docs/)
 - [Agent Skills Specification](https://agentskills.io/specification)
 - [Pulumi ESC Documentation](https://www.pulumi.com/docs/esc/)
+- [Pulumi TypeScript SDK](https://www.pulumi.com/docs/languages-sdks/javascript/)
+- [Pulumi Go SDK](https://www.pulumi.com/docs/languages-sdks/go/)
+- [Pulumi Python SDK](https://www.pulumi.com/docs/languages-sdks/python/)

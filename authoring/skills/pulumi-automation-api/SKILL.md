@@ -19,24 +19,9 @@ Invoke this skill when:
 
 ## What is Automation API
 
-Automation API provides programmatic access to Pulumi operations. Instead of running `pulumi up` from the CLI, you call functions in your code that perform the same operations.
+Automation API provides programmatic access to Pulumi operations. Instead of running `pulumi up` from the CLI, you call functions in your code that perform the same operations. You create or select a stack, then run operations like `up`, `preview`, or `destroy` programmatically.
 
-```typescript
-import * as automation from "@pulumi/pulumi/automation";
-
-// Create or select a stack
-const stack = await automation.LocalWorkspace.createOrSelectStack({
-    stackName: "dev",
-    projectName: "my-project",
-    program: async () => {
-        // Your Pulumi program here
-    },
-});
-
-// Run pulumi up programmatically
-const upResult = await stack.up({ onOutput: console.log });
-console.log(`Update summary: ${JSON.stringify(upResult.summary)}`);
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ## When to Use Automation API
 
@@ -87,14 +72,7 @@ If you have Bash scripts or Makefiles stitching together multiple `pulumi` comma
 
 ### Local Source vs Inline Source
 
-**Local Source** - Pulumi program in separate files:
-
-```typescript
-const stack = await automation.LocalWorkspace.createOrSelectStack({
-    stackName: "dev",
-    workDir: "./infrastructure",  // Points to existing Pulumi project
-});
-```
+**Local Source** - Pulumi program in separate files. You point the workspace at an existing Pulumi project directory.
 
 **When to use:**
 
@@ -103,34 +81,23 @@ const stack = await automation.LocalWorkspace.createOrSelectStack({
 - Want independent version control and release cycles
 - Platform team orchestrating application team's infrastructure
 
-**Inline Source** - Pulumi program embedded in orchestrator:
-
-```typescript
-import * as aws from "@pulumi/aws";
-
-const stack = await automation.LocalWorkspace.createOrSelectStack({
-    stackName: "dev",
-    projectName: "my-project",
-    program: async () => {
-        const bucket = new aws.s3.Bucket("my-bucket");
-        return { bucketName: bucket.id };
-    },
-});
-```
+**Inline Source** - Pulumi program embedded in the orchestrator code. You define the infrastructure program as a function passed directly to the stack constructor.
 
 **When to use:**
 
 - Single team owns everything
 - Tight coupling between orchestration and infrastructure is desired
-- Distributing as compiled binary (no source files needed)
+- Distributing as a compiled binary or packaged application (no source files needed)
 - Simpler deployment artifact
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### Language Independence
 
 The Automation API program can use a different language than the Pulumi programs it orchestrates:
 
 ```text
-Orchestrator (Go) → manages → Pulumi Program (TypeScript)
+Orchestrator (any language) → manages → Pulumi Program (any language)
 ```
 
 This enables platform teams to use their preferred language while application teams use theirs.
@@ -139,175 +106,60 @@ This enables platform teams to use their preferred language while application te
 
 ### Multi-Stack Orchestration
 
-Deploy multiple stacks in dependency order:
+Deploy multiple stacks in dependency order. Define the list of stacks with their directories, then iterate through them sequentially, creating or selecting each stack and running `up`. For teardown, destroy in reverse order.
 
-```typescript
-import * as automation from "@pulumi/pulumi/automation";
-
-async function deploy() {
-    const stacks = [
-        { name: "infrastructure", dir: "./infra" },
-        { name: "platform", dir: "./platform" },
-        { name: "application", dir: "./app" },
-    ];
-
-    for (const stackInfo of stacks) {
-        console.log(`Deploying ${stackInfo.name}...`);
-
-        const stack = await automation.LocalWorkspace.createOrSelectStack({
-            stackName: "prod",
-            workDir: stackInfo.dir,
-        });
-
-        await stack.up({ onOutput: console.log });
-        console.log(`${stackInfo.name} deployed successfully`);
-    }
-}
-
-async function destroy() {
-    // Destroy in reverse order
-    const stacks = [
-        { name: "application", dir: "./app" },
-        { name: "platform", dir: "./platform" },
-        { name: "infrastructure", dir: "./infra" },
-    ];
-
-    for (const stackInfo of stacks) {
-        console.log(`Destroying ${stackInfo.name}...`);
-
-        const stack = await automation.LocalWorkspace.selectStack({
-            stackName: "prod",
-            workDir: stackInfo.dir,
-        });
-
-        await stack.destroy({ onOutput: console.log });
-    }
-}
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### Passing Configuration
 
-Set stack configuration programmatically:
+Set stack configuration programmatically before deploying. You can set both plain values and secrets on a stack using the configuration API.
 
-```typescript
-const stack = await automation.LocalWorkspace.createOrSelectStack({
-    stackName: "dev",
-    workDir: "./infrastructure",
-});
-
-// Set configuration values
-await stack.setConfig("aws:region", { value: "us-west-2" });
-await stack.setConfig("dbPassword", { value: "secret", secret: true });
-
-// Then deploy
-await stack.up();
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### Reading Outputs
 
-Access stack outputs after deployment:
+Access stack outputs after deployment. Outputs are available both from the operation result and by querying the stack directly.
 
-```typescript
-const upResult = await stack.up();
-
-// Get all outputs
-const outputs = await stack.outputs();
-console.log(`VPC ID: ${outputs["vpcId"].value}`);
-
-// Or from the up result
-console.log(`Outputs: ${JSON.stringify(upResult.outputs)}`);
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### Error Handling
 
-Handle deployment failures gracefully:
+Handle deployment failures gracefully. Check both for exceptions/errors from the operation and inspect the result summary for failure status.
 
-```typescript
-try {
-    const result = await stack.up({ onOutput: console.log });
-
-    if (result.summary.result === "failed") {
-        console.error("Deployment failed");
-        process.exit(1);
-    }
-} catch (error) {
-    console.error(`Deployment error: ${error}`);
-    throw error;
-}
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### Parallel Stack Operations
 
-When stacks are independent, deploy in parallel:
+When stacks are independent, deploy them in parallel using language-appropriate concurrency primitives.
 
-```typescript
-const independentStacks = [
-    { name: "service-a", dir: "./service-a" },
-    { name: "service-b", dir: "./service-b" },
-    { name: "service-c", dir: "./service-c" },
-];
-
-await Promise.all(independentStacks.map(async (stackInfo) => {
-    const stack = await automation.LocalWorkspace.createOrSelectStack({
-        stackName: "prod",
-        workDir: stackInfo.dir,
-    });
-    return stack.up({ onOutput: (msg) => console.log(`[${stackInfo.name}] ${msg}`) });
-}));
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ## Best Practices
 
 ### Separate Configuration from Code
 
-Externalize configuration into files or environment variables:
+Externalize configuration into files or environment variables. Load deployment configuration (stack names, directories, environment) from a JSON file or similar, then iterate over the entries. This enables distributing compiled binaries or packaged applications without exposing source code.
 
-```typescript
-import * as fs from "fs";
-
-interface DeployConfig {
-    stacks: Array<{ name: string; dir: string; }>;
-    environment: string;
-}
-
-const config: DeployConfig = JSON.parse(
-    fs.readFileSync("./deploy-config.json", "utf-8")
-);
-
-for (const stackInfo of config.stacks) {
-    const stack = await automation.LocalWorkspace.createOrSelectStack({
-        stackName: config.environment,
-        workDir: stackInfo.dir,
-    });
-    await stack.up();
-}
-```
-
-This enables distributing compiled binaries without exposing source code.
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### Stream Output for Long Operations
 
-Use `onOutput` callback for real-time feedback:
+Use the output streaming callback/writer for real-time feedback during long-running operations. This output can be directed to stdout, a logging system, a websocket, or any other destination.
 
-```typescript
-await stack.up({
-    onOutput: (message) => {
-        process.stdout.write(message);
-        // Or send to logging system, websocket, etc.
-    },
-});
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ## Quick Reference
 
 | Scenario | Approach |
 | --- | --- |
-| Existing Pulumi projects | Local source with workDir |
+| Existing Pulumi projects | Local source with work directory |
 | New embedded infrastructure | Inline source with program function |
 | Different teams | Local source for independence |
-| Compiled binary distribution | Inline source or bundled local |
+| Packaged/compiled distribution | Inline source or bundled local |
 | Multi-stack dependencies | Sequential deployment in order |
-| Independent stacks | Parallel deployment with Promise.all |
+| Independent stacks | Parallel deployment with concurrency primitives |
+
+> See language-specific examples for API names: [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ## Related Skills
 

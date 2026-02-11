@@ -18,47 +18,23 @@ Invoke this skill when:
 
 ## Practices
 
-### 1. Never Create Resources Inside `apply()`
+### 1. Never Create Resources Inside Apply/Transform Callbacks
 
-**Why**: Resources created inside `apply()` don't appear in `pulumi preview`, making changes unpredictable. Pulumi cannot properly track dependencies, leading to race conditions and deployment failures.
+**Why**: Resources created inside apply/transform callbacks don't appear in `pulumi preview`, making changes unpredictable. Pulumi cannot properly track dependencies, leading to race conditions and deployment failures.
 
 **Detection signals**:
 
-- `new aws.` or other resource constructors inside `.apply()` callbacks
-- Resource creation inside `pulumi.all([...]).apply()`
+- Resource constructors inside apply/transform callbacks
+- Resource creation inside combined-output apply calls
 - Dynamic resource counts determined at runtime inside apply
-
-**Wrong**:
-
-```typescript
-const bucket = new aws.s3.Bucket("bucket");
-
-bucket.id.apply(bucketId => {
-    // WRONG: This resource won't appear in preview
-    new aws.s3.BucketObject("object", {
-        bucket: bucketId,
-        content: "hello",
-    });
-});
-```
-
-**Right**:
-
-```typescript
-const bucket = new aws.s3.Bucket("bucket");
-
-// Pass the output directly - Pulumi handles the dependency
-const object = new aws.s3.BucketObject("object", {
-    bucket: bucket.id,  // Output<string> works here
-    content: "hello",
-});
-```
 
 **When apply is appropriate**:
 
 - Transforming output values for use in tags, names, or computed strings
 - Logging or debugging (not resource creation)
 - Conditional logic that affects resource properties, not resource existence
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 **Reference**: https://www.pulumi.com/docs/concepts/inputs-outputs/
 
@@ -70,48 +46,13 @@ const object = new aws.s3.BucketObject("object", {
 
 **Detection signals**:
 
-- Variables extracted from `.apply()` used later as resource inputs
-- `await` on output values outside of apply
-- String concatenation with outputs instead of `pulumi.interpolate`
+- Variables extracted from apply/transform callbacks used later as resource inputs
+- String concatenation with outputs instead of using Pulumi's interpolation helpers
+- Manually unwrapping output values and passing raw strings/values to resources
 
-**Wrong**:
+**For string interpolation**, use Pulumi's built-in interpolation helpers rather than manually applying transformations. Each language SDK provides concatenation and formatting utilities that preserve the dependency graph.
 
-```typescript
-const vpc = new aws.ec2.Vpc("vpc", { cidrBlock: "10.0.0.0/16" });
-
-// WRONG: Extracting the value breaks the dependency chain
-let vpcId: string;
-vpc.id.apply(id => { vpcId = id; });
-
-const subnet = new aws.ec2.Subnet("subnet", {
-    vpcId: vpcId,  // May be undefined, no tracked dependency
-    cidrBlock: "10.0.1.0/24",
-});
-```
-
-**Right**:
-
-```typescript
-const vpc = new aws.ec2.Vpc("vpc", { cidrBlock: "10.0.0.0/16" });
-
-const subnet = new aws.ec2.Subnet("subnet", {
-    vpcId: vpc.id,  // Pass the Output directly
-    cidrBlock: "10.0.1.0/24",
-});
-```
-
-**For string interpolation**:
-
-```typescript
-// WRONG
-const name = bucket.id.apply(id => `prefix-${id}-suffix`);
-
-// RIGHT - use pulumi.interpolate for template literals
-const name = pulumi.interpolate`prefix-${bucket.id}-suffix`;
-
-// RIGHT - use pulumi.concat for simple concatenation
-const name = pulumi.concat("prefix-", bucket.id, "-suffix");
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 **Reference**: https://www.pulumi.com/docs/concepts/inputs-outputs/
 
@@ -119,7 +60,7 @@ const name = pulumi.concat("prefix-", bucket.id, "-suffix");
 
 ### 3. Use Components for Related Resources
 
-**Why**: ComponentResource classes group related resources into reusable, logical units. Without components, your resource graph is flat, making it hard to understand which resources belong together, reuse patterns across stacks, or reason about your infrastructure at a higher level.
+**Why**: Component resources group related resources into reusable, logical units. Without components, your resource graph is flat, making it hard to understand which resources belong together, reuse patterns across stacks, or reason about your infrastructure at a higher level.
 
 **Detection signals**:
 
@@ -127,113 +68,39 @@ const name = pulumi.concat("prefix-", bucket.id, "-suffix");
 - Repeated resource patterns across stacks that should be abstracted
 - Hard to understand resource relationships from the Pulumi console
 
-**Wrong**:
-
-```typescript
-// Flat structure - no logical grouping, hard to reuse
-const bucket = new aws.s3.Bucket("app-bucket");
-const bucketPolicy = new aws.s3.BucketPolicy("app-bucket-policy", {
-    bucket: bucket.id,
-    policy: policyDoc,
-});
-const originAccessIdentity = new aws.cloudfront.OriginAccessIdentity("app-oai");
-const distribution = new aws.cloudfront.Distribution("app-cdn", { /* ... */ });
-```
-
-**Right**:
-
-```typescript
-interface StaticSiteArgs {
-    domain: string;
-    content: pulumi.asset.AssetArchive;
-}
-
-class StaticSite extends pulumi.ComponentResource {
-    public readonly url: pulumi.Output<string>;
-
-    constructor(name: string, args: StaticSiteArgs, opts?: pulumi.ComponentResourceOptions) {
-        super("myorg:components:StaticSite", name, args, opts);
-
-        // Resources created here - see practice 4 for parent setup
-        const bucket = new aws.s3.Bucket(`${name}-bucket`, {}, { parent: this });
-        // ...
-
-        this.url = distribution.domainName;
-        this.registerOutputs({ url: this.url });
-    }
-}
-
-// Reusable across stacks
-const site = new StaticSite("marketing", {
-    domain: "marketing.example.com",
-    content: new pulumi.asset.FileArchive("./dist"),
-});
-```
-
 **Component best practices**:
 
 - Use a consistent type URN pattern: `organization:module:ComponentName`
-- Call `registerOutputs()` at the end of the constructor
-- Expose outputs as class properties for consumers
-- Accept `ComponentResourceOptions` to allow callers to set providers, aliases, etc.
+- Call the register-outputs method at the end of the constructor
+- Expose outputs as properties/fields for consumers
+- Accept resource options to allow callers to set providers, aliases, etc.
 
 For in-depth component authoring guidance (args design, multi-language support, testing, distribution), use skill `pulumi-component`.
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 **Reference**: https://www.pulumi.com/docs/concepts/resources/components/
 
 ---
 
-### 4. Always Set `parent: this` in Components
+### 4. Always Set the Parent in Components
 
-**Why**: When you create resources inside a ComponentResource without setting `parent: this`, those resources appear at the root level of your stack's state. This breaks the logical hierarchy, makes the Pulumi console hard to navigate, and can cause issues with aliases and refactoring. The parent relationship is what makes the component actually group its children.
+**Why**: When you create resources inside a component without setting the parent, those resources appear at the root level of your stack's state. This breaks the logical hierarchy, makes the Pulumi console hard to navigate, and can cause issues with aliases and refactoring. The parent relationship is what makes the component actually group its children.
 
 **Detection signals**:
 
-- ComponentResource classes that don't pass `{ parent: this }` to child resources
+- Component constructors that don't set the parent on child resources
 - Resources inside a component appearing at root level in the console
 - Unexpected behavior when adding aliases to components
 
-**Wrong**:
-
-```typescript
-class MyComponent extends pulumi.ComponentResource {
-    constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
-        super("myorg:components:MyComponent", name, {}, opts);
-
-        // WRONG: No parent set - this bucket appears at root level
-        const bucket = new aws.s3.Bucket(`${name}-bucket`);
-    }
-}
-```
-
-**Right**:
-
-```typescript
-class MyComponent extends pulumi.ComponentResource {
-    constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
-        super("myorg:components:MyComponent", name, {}, opts);
-
-        // RIGHT: Parent establishes hierarchy
-        const bucket = new aws.s3.Bucket(`${name}-bucket`, {}, {
-            parent: this
-        });
-
-        const policy = new aws.s3.BucketPolicy(`${name}-policy`, {
-            bucket: bucket.id,
-            policy: policyDoc,
-        }, {
-            parent: this
-        });
-    }
-}
-```
-
-**What parent: this provides**:
+**What setting the parent provides**:
 
 - Resources appear nested under the component in Pulumi console
 - Deleting the component deletes all children
 - Aliases on the component automatically apply to children
 - Clear ownership in state files
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 **Reference**: https://www.pulumi.com/docs/concepts/resources/components/
 
@@ -265,22 +132,6 @@ pulumi config set --secret databasePassword hunter2
 pulumi config set --secret apiKey sk-1234567890
 ```
 
-**In code**:
-
-```typescript
-const config = new pulumi.Config();
-
-// This retrieves a secret - the value stays encrypted
-const dbPassword = config.requireSecret("databasePassword");
-
-// Creating outputs from secrets preserves secrecy
-const connectionString = pulumi.interpolate`postgres://user:${dbPassword}@host/db`;
-// connectionString is also a secret Output
-
-// Explicitly mark values as secret
-const computed = pulumi.secret(someValue);
-```
-
 **Use Pulumi ESC for centralized secrets**:
 
 ```yaml
@@ -303,6 +154,8 @@ esc env set production-secrets db.password --secret "hunter2"
 - OAuth client secrets
 - Encryption keys
 
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
+
 **References**:
 
 - https://www.pulumi.com/docs/concepts/secrets/
@@ -317,69 +170,23 @@ esc env set production-secrets db.password --secret "hunter2"
 **Detection signals**:
 
 - Resource rename without alias
-- Moving resource into or out of a ComponentResource
+- Moving resource into or out of a component
 - Changing the parent of a resource
 - Preview shows delete+create when update was intended
 
-**Wrong**:
-
-```typescript
-// Before: resource named "my-bucket"
-const bucket = new aws.s3.Bucket("my-bucket");
-
-// After: renamed without alias - DESTROYS THE BUCKET
-const bucket = new aws.s3.Bucket("application-bucket");
-```
-
-**Right**:
-
-```typescript
-// After: renamed with alias - preserves the existing bucket
-const bucket = new aws.s3.Bucket("application-bucket", {}, {
-    aliases: [{ name: "my-bucket" }],
-});
-```
-
-**Moving into a component**:
-
-```typescript
-// Before: top-level resource
-const bucket = new aws.s3.Bucket("my-bucket");
-
-// After: inside a component - needs alias with old parent
-class MyComponent extends pulumi.ComponentResource {
-    constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
-        super("myorg:components:MyComponent", name, {}, opts);
-
-        const bucket = new aws.s3.Bucket("bucket", {}, {
-            parent: this,
-            aliases: [{
-                name: "my-bucket",
-                parent: pulumi.rootStackResource,  // Was at root
-            }],
-        });
-    }
-}
-```
-
 **Alias types**:
 
-```typescript
-// Simple name change
-aliases: [{ name: "old-name" }]
-
-// Parent change
-aliases: [{ name: "resource-name", parent: oldParent }]
-
-// Full URN (when you know the exact previous URN)
-aliases: ["urn:pulumi:stack::project::aws:s3/bucket:Bucket::old-name"]
-```
+- Simple name change — alias with the old name
+- Parent change — alias with old name and old parent
+- Full URN — when you know the exact previous URN
 
 **Lifecycle**:
 
 1. Add alias during refactor
 2. Run `pulumi up` on all stacks
 3. Remove alias after all stacks updated (optional, but keeps code clean)
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 **Reference**: https://www.pulumi.com/docs/iac/concepts/resources/options/aliases/
 
@@ -473,10 +280,10 @@ jobs:
 
 | Practice | Key Signal | Fix |
 |----------|-----------|-----|
-| No resources in apply | `new Resource()` inside `.apply()` | Move resource outside, pass Output directly |
-| Pass outputs directly | Extracted values used as inputs | Use Output objects, `pulumi.interpolate` |
-| Use components | Flat structure, repeated patterns | Create ComponentResource classes |
-| Set parent: this | Component children at root level | Pass `{ parent: this }` to all child resources |
+| No resources in apply | Resource constructors inside apply callbacks | Move resource outside, pass Output directly |
+| Pass outputs directly | Extracted values used as inputs | Use Output objects, Pulumi's interpolation helpers |
+| Use components | Flat structure, repeated patterns | Create component resource classes/structs |
+| Set parent | Component children at root level | Set the parent on all child resources |
 | Secrets from day one | Plaintext passwords/keys in config | Use `--secret` flag, ESC |
 | Aliases when refactoring | Delete+create in preview | Add alias with old name/parent |
 | Preview before deploy | `pulumi up --yes` | Always run `pulumi preview` first |
@@ -485,16 +292,16 @@ jobs:
 
 When reviewing Pulumi code, verify:
 
-- [ ] No resource constructors inside `apply()` callbacks
+- [ ] No resource constructors inside apply/transform callbacks
 - [ ] Outputs passed directly to dependent resources
-- [ ] Related resources grouped in ComponentResource classes
-- [ ] Child resources have `{ parent: this }`
-- [ ] Sensitive values use `config.requireSecret()` or `--secret`
+- [ ] Related resources grouped in component resource classes
+- [ ] Child resources have the parent set to the component
+- [ ] Sensitive values use secret config retrieval or `--secret`
 - [ ] Refactored resources have aliases preserving identity
 - [ ] Deployment process includes preview step
 
 ## Related Skills
 
-- **pulumi-component**: Deep guide to authoring ComponentResource classes, designing args interfaces, multi-language support, testing, and distribution. Use skill `pulumi-component`.
+- **pulumi-component**: Deep guide to authoring component resources, designing args, multi-language support, testing, and distribution. Use skill `pulumi-component`.
 - **pulumi-automation-api**: Programmatic orchestration of multiple stacks. Use skill `pulumi-automation-api`.
 - **pulumi-esc**: Centralized secrets and configuration management. Use skill `pulumi-esc`.

@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Pulumi's Agent Skills! This guide
 
 ## What is a Skill?
 
-A skill is a markdown file (`SKILL.md`) that teaches AI coding assistants how to help users with specific tasks. Skills follow the [agentskills.io](https://agentskills.io) open standard.
+A skill is a set of markdown files that teach AI coding assistants how to help users with specific tasks. Skills follow the [agentskills.io](https://agentskills.io) open standard and support TypeScript, Go, and Python.
 
 ## Repository Structure
 
@@ -15,11 +15,17 @@ pulumi-agent-skills/
 ├── migration/          # Convert and import from other tools
 │   └── skills/
 │       └── skill-name/
-│           └── SKILL.md
+│           ├── SKILL.md              # Language-neutral concepts and workflows
+│           ├── examples-ts.md        # TypeScript code examples
+│           ├── examples-go.md        # Go code examples
+│           └── examples-python.md    # Python code examples
 └── authoring/          # Write quality Pulumi programs
     └── skills/
         └── skill-name/
-            └── SKILL.md
+            ├── SKILL.md
+            ├── examples-ts.md
+            ├── examples-go.md
+            └── examples-python.md
 ```
 
 See [AGENTS.md](AGENTS.md) for detailed information on plugin structure, cross-skill references, and skill conventions.
@@ -49,8 +55,20 @@ Skill content here...
 | Field     | Description                                        |
 |-----------|----------------------------------------------------|
 | `version` | Semantic version (e.g., "1.0.0")                   |
-| `author` | Author name or organization |
+| `author`  | Author name or organization                        |
 | `license` | License identifier (defaults to repository license) |
+
+## Prerequisites
+
+To contribute skills, you should be familiar with at least one Pulumi language SDK:
+
+- **TypeScript**: Node.js 18+, `@pulumi/pulumi` SDK
+- **Go**: Go 1.21+, `github.com/pulumi/pulumi/sdk/v3/go/pulumi`
+- **Python**: Python 3.8+, `pulumi` SDK
+
+All languages require:
+- Pulumi CLI v3.0+
+- Appropriate cloud credentials for the target provider
 
 ## Writing Guidelines
 
@@ -59,10 +77,10 @@ Skill content here...
 Use imperative voice. Tell the AI what to do, not what it could do.
 
 ```markdown
-<!-- ✅ Good -->
+<!-- Good -->
 Run `pulumi preview` to validate the changes.
 
-<!-- ❌ Avoid -->
+<!-- Avoid -->
 You might want to run `pulumi preview` to validate the changes.
 ```
 
@@ -71,35 +89,50 @@ You might want to run `pulumi preview` to validate the changes.
 Provide exact commands, flags, and examples.
 
 ```markdown
-<!-- ✅ Good -->
+<!-- Good -->
 Install the plugin:
 
 pulumi plugin install tool cdk2pulumi
 ```
 
 ```markdown
-<!-- ❌ Avoid -->
+<!-- Avoid -->
 Make sure the required plugins are installed.
 ```
 
 ### Show Before/After Examples
 
-For transformation skills, show clear input/output pairs:
+For transformation skills, show clear input/output pairs in all three languages.
 
-```markdown
-## Terraform
-
+**Terraform (input):**
+```hcl
 resource "aws_s3_bucket" "example" {
   bucket = "my-bucket"
 }
 ```
 
-```markdown
-## Pulumi TypeScript
-
+**TypeScript (output):**
+```typescript
 const bucket = new aws.s3.Bucket("example", {
     bucket: "my-bucket",
 });
+```
+
+**Go (output):**
+```go
+bucket, err := s3.NewBucket(ctx, "example", &s3.BucketArgs{
+    Bucket: pulumi.String("my-bucket"),
+})
+if err != nil {
+    return err
+}
+```
+
+**Python (output):**
+```python
+bucket = aws.s3.Bucket("example",
+    bucket="my-bucket",
+)
 ```
 
 ### Explain Decision Points
@@ -109,8 +142,8 @@ When multiple approaches exist, explain the trade-offs:
 ```markdown
 ## Provider Selection
 
-- **Use `@pulumi/aws-native`** when the resource type is available and you need CloudFormation parity
-- **Use `@pulumi/aws`** when aws-native doesn't support the resource or you need Terraform-style behavior
+- **Use `aws-native`** when the resource type is available and you need CloudFormation parity
+- **Use `aws`** when aws-native doesn't support the resource or you need Terraform-style behavior
 ```
 
 ### Document Prerequisites
@@ -121,7 +154,7 @@ List required tools, versions, and setup steps:
 ## Prerequisites
 
 - Pulumi CLI v3.0+
-- Node.js 18+
+- One of: Node.js 18+ / Go 1.21+ / Python 3.8+
 - AWS credentials configured
 ```
 
@@ -156,7 +189,7 @@ This usually means the resource ID format is incorrect. Use `pulumi plugin run c
 ### Example: Credential Handling
 
 ```markdown
-<!-- ✅ Good - Multiple options -->
+<!-- Good - Multiple options -->
 ## Credentials
 
 Configure AWS credentials using any standard method:
@@ -165,7 +198,7 @@ Configure AWS credentials using any standard method:
 - IAM roles (for EC2, ECS, Lambda)
 - Pulumi ESC environment
 
-<!-- ❌ Avoid - Internal-only -->
+<!-- Avoid - Internal-only -->
 ## Credentials
 
 Use the `call_internal_tool()` tool to authenticate.
@@ -179,9 +212,10 @@ Before submitting a skill, verify:
 - [ ] **Naming**: `name` matches directory name, lowercase with hyphens
 - [ ] **Standalone**: No references to internal tools or APIs
 - [ ] **Public URLs**: All documentation links are publicly accessible
-- [ ] **Examples**: Code examples are syntactically correct
+- [ ] **Examples**: Code examples are syntactically correct for all three languages
 - [ ] **Prerequisites**: Required tools and versions are documented
 - [ ] **Tested**: Skill produces helpful results when used with an AI assistant
+- [ ] **Multi-language**: `examples-ts.md`, `examples-go.md`, and `examples-python.md` are all present
 
 ## Security Requirements
 
@@ -198,10 +232,11 @@ Before submitting a skill, verify:
 1. Determine which plugin group the skill belongs to (migration or authoring)
 2. Create a new directory under `<plugin>/skills/` with the skill name
 3. Add a `SKILL.md` file following the format above
-4. Update [AGENTS.md](AGENTS.md) to list the new skill in the appropriate plugin section
-5. Update [README.md](README.md) to add the skill to the skills table
-6. Test the skill with at least one AI coding assistant
-7. Submit a pull request with:
+4. Add `examples-ts.md`, `examples-go.md`, and `examples-python.md` with idiomatic code for each language
+5. Update [AGENTS.md](AGENTS.md) to list the new skill in the appropriate plugin section
+6. Update [README.md](README.md) to add the skill to the skills table
+7. Test the skill with at least one AI coding assistant
+8. Submit a pull request with:
    - Description of what the skill does
    - Example prompts that trigger the skill
    - Testing notes
@@ -222,6 +257,7 @@ The skill will automatically be included in its plugin group. No manifest update
 Open an issue with:
 
 - Which skill has the problem
+- What language you were using (TypeScript, Go, or Python)
 - What you expected to happen
 - What actually happened
 - Example prompt you used
@@ -240,7 +276,10 @@ Open an issue with:
 - Use realistic but simple examples
 - Include necessary imports
 - Add comments for non-obvious behavior
-- Prefer TypeScript for Pulumi examples (most common)
+- Write idiomatic code for each language:
+  - **TypeScript**: Use `async/await`, proper types, `@pulumi/*` imports
+  - **Go**: Always show `if err != nil` handling, use `pulumi.String()` wrappers
+  - **Python**: Use `snake_case`, `pulumi_*` imports, Pythonic patterns
 
 ## Getting Help
 

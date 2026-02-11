@@ -123,18 +123,20 @@ CDK uses Lambda-backed Custom Resources for functionality not available in Cloud
 |---------|----------|
 | `aws-certificatemanager/dns-validated-certificate-handler` | Replace with `aws.acm.Certificate`, `aws.route53.Record`, and `aws.acm.CertificateValidation` |
 | `aws-ec2/restrict-default-security-group-handler` | Replace with `aws.ec2.DefaultSecurityGroup` resource with empty ingress/egress rules |
-| `aws-ecr/auto-delete-images-handler` | Replace `aws-native:ecr:Repository` with `aws.ecr.Repository` with `forceDelete: true` |
-| `aws-s3/auto-delete-objects-handler` | Replace `aws-native:s3:Bucket` with `aws.s3.Bucket` with `forceDestroy: true` |
+| `aws-ecr/auto-delete-images-handler` | Replace `aws-native:ecr:Repository` with `aws.ecr.Repository` with force delete enabled |
+| `aws-s3/auto-delete-objects-handler` | Replace `aws-native:s3:Bucket` with `aws.s3.Bucket` with force destroy enabled |
 | `aws-s3/notifications-resource-handler` | Replace with `aws.s3.BucketNotification` |
-| `aws-logs/log-retention-handler` | Replace with `aws.cloudwatch.LogGroup` with explicit `retentionInDays` |
+| `aws-logs/log-retention-handler` | Replace with `aws.cloudwatch.LogGroup` with explicit retention period |
 | `aws-iam/oidc-handler` | Replace with `aws.iam.OpenIdConnectProvider` |
-| `aws-route53/delete-existing-record-set-handler` | Replace with `aws.route53.Record` with `allowOverwrite: true` |
+| `aws-route53/delete-existing-record-set-handler` | Replace with `aws.route53.Record` with overwrite enabled |
 | `aws-dynamodb/replica-handler` | Replace with `aws.dynamodb.TableReplica` |
 
 **Cross-account/region handlers:**
 
-- `aws-cloudfront/edge-function` → Use `aws.lambda.Function` with `region: "us-east-1"`
+- `aws-cloudfront/edge-function` → Use `aws.lambda.Function` with a us-east-1 provider
 - `aws-route53/cross-account-zone-delegation-handler` → Use separate aws provider with cross-account role assumption
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 **Graceful degradation for unknown handlers:**
 
@@ -164,7 +166,7 @@ jq '.files, .dockerImages' cdk.out/*.assets.json
 |------------|-----------|------------------|
 | **Docker Image** | `dockerImages` in assets.json | Use `docker-build.Image` to build and push. Replace hard-coded ECR URI with image output. |
 | **File with build command** | `files` with `executable` field | **Flag to user** - build command needs setup in Pulumi |
-| **Static file** | `files` without `executable`, no bundling in CDK source | Use `pulumi.FileArchive` or `pulumi.FileAsset` |
+| **Static file** | `files` without `executable`, no bundling in CDK source | Use file archive or file asset (language-specific API varies) |
 | **Bundled file** | `files` without `executable`, but CDK source uses bundling | **Flag to user** - bundling needs setup in Pulumi |
 
 **Detecting Bundling in CDK Source:**
@@ -183,29 +185,17 @@ Check the CDK source code for bundling constructs (`NodejsFunction`, `PythonFunc
 >
 > Each option has tradeoffs around caching, reproducibility, and deployment speed. For production workloads, option 1 is typically preferred.
 
-#### 2.4 TypeScript Handling for aws-native
+#### 2.4 aws-native Output Handling
 
-aws-native outputs often include undefined. Avoid `!` non-null assertions. Always safely unwrap with `.apply()`:
+aws-native outputs may include undefined/nil/None values. Always safely unwrap output values using language-appropriate patterns (e.g., `.apply()` in TypeScript/Python, `.ApplyT()` in Go).
 
-```ts
-// ❌ WRONG - Will cause TypeScript errors
-functionName: lambdaFunction.functionName!,
-
-// ✅ CORRECT - Handle undefined safely
-functionName: lambdaFunction.functionName.apply(name => name || ""),
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 #### 2.5 Environment Logic Preservation
 
-Carry forward all conditional behaviors:
+Carry forward all conditional behaviors from the CDK source (environment-specific conditionals, feature flags, etc.).
 
-```ts
-if (currentEnv.createVpc) {
-  // create resources
-} else {
-  const vpcId = pulumi.output(currentEnv.vpcId);
-}
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ### 3. Resource Import (optional)
 
@@ -261,14 +251,14 @@ When performing a migration, always produce:
 
 1. **Overview** (high-level description)
 2. **Migration Plan Summary**
-3. **Pulumi Code Outputs** (TypeScript; structured by file)
+3. **Pulumi Code Outputs** (structured by file, in the user's target language)
 4. **Resource Mapping Table** (CDK → Pulumi)
 5. **Custom Resources Summary** (if any):
    - Handlers migrated to native Pulumi resources
    - Handlers kept as `CustomResourceEmulator` with rationale
    - Any handlers requiring user attention
 6. **Assets & Bundling Summary** (if any):
-   - **Migrated**: Assets successfully converted (e.g., Docker images → `docker-build.Image`, static files → `pulumi.FileArchive`)
+   - **Migrated**: Assets successfully converted (e.g., Docker images → `docker-build.Image`, static files → file archive/asset)
    - **Requires attention**: Assets with bundling steps, options presented, and decision if made
 7. **Final Migration Report** (PR-ready)
 8. **Next Steps** (optional refactors)

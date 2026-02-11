@@ -96,22 +96,15 @@ Extract from the template:
 
 **IMPORTANT:** There is NO automated conversion tool for CloudFormation. You MUST convert each resource manually.
 
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
+
 #### 2.1 Resource Name Convention (CRITICAL)
 
 **Every Pulumi resource MUST use the CloudFormation Logical ID as its name.**
 
-```typescript
-// CloudFormation:
-// "MyAppBucketABC123": { "Type": "AWS::S3::Bucket", ... }
-
-// Pulumi - CORRECT:
-const myAppBucket = new aws.s3.Bucket("MyAppBucketABC123", { ... });
-
-// Pulumi - WRONG (DO NOT do this - import will fail):
-const myAppBucket = new aws.s3.Bucket("my-app-bucket", { ... });
-```
-
 This naming convention is REQUIRED because the `cdk-importer` tool matches resources by name.
+
+> **Code examples:** See resource naming in [TypeScript](examples-ts.md#resource-naming) | [Go](examples-go.md#resource-naming) | [Python](examples-python.md#resource-naming)
 
 #### 2.2 Provider Strategy
 
@@ -132,85 +125,33 @@ Map CloudFormation intrinsic functions to Pulumi equivalents:
 | `!Ref` (resource) | Resource output (e.g., `bucket.id`) |
 | `!Ref` (parameter) | Pulumi config |
 | `!GetAtt Resource.Attr` | Resource property output |
-| `!Sub "..."` | `pulumi.interpolate` |
-| `!Join [delim, [...]]` | `pulumi.interpolate` or `.apply()` |
-| `!If [cond, true, false]` | Ternary operator |
-| `!Equals [a, b]` | `===` comparison |
-| `!Select [idx, list]` | Array indexing with `.apply()` |
-| `!Split [delim, str]` | `.apply(v => v.split(...))` |
+| `!Sub "..."` | String interpolation helper (see language examples) |
+| `!Join [delim, [...]]` | String interpolation or `.apply()` transform |
+| `!If [cond, true, false]` | Conditional expression or `if` statement |
+| `!Equals [a, b]` | Equality comparison |
+| `!Select [idx, list]` | Array indexing with `.apply()` transform |
+| `!Split [delim, str]` | `.apply()` with string split |
 | `Fn::ImportValue` | Stack references or config |
 
-##### Example: !Sub
-
-```typescript
-// CloudFormation: !Sub "arn:aws:s3:::${MyBucket}/*"
-// Pulumi:
-const bucketArn = pulumi.interpolate`arn:aws:s3:::${myBucket.bucket}/*`;
-```
-
-##### Example: !GetAtt
-
-```typescript
-// CloudFormation: !GetAtt MyFunction.Arn
-// Pulumi:
-const functionArn = myFunction.arn;
-```
+> **Language-specific syntax:** [TypeScript](examples-ts.md#intrinsic-functions) | [Go](examples-go.md#intrinsic-functions) | [Python](examples-python.md#intrinsic-functions)
 
 #### 2.4 CloudFormation Conditions
 
-Convert CloudFormation conditions to TypeScript logic:
+Convert CloudFormation conditions to language-native conditional logic using Pulumi config.
 
-```typescript
-// CloudFormation:
-// "Conditions": {
-//   "CreateProdResources": { "Fn::Equals": [{ "Ref": "Environment" }, "prod"] }
-// }
-
-// Pulumi:
-const config = new pulumi.Config();
-const environment = config.require("environment");
-const createProdResources = environment === "prod";
-
-if (createProdResources) {
-  // Create production-only resources
-}
-```
+> **Code examples:** [TypeScript](examples-ts.md#conditions) | [Go](examples-go.md#conditions) | [Python](examples-python.md#conditions)
 
 #### 2.5 CloudFormation Parameters
 
-Convert parameters to Pulumi config:
+Convert parameters to Pulumi config values with appropriate defaults.
 
-```typescript
-// CloudFormation:
-// "Parameters": {
-//   "InstanceType": { "Type": "String", "Default": "t3.micro" }
-// }
-
-// Pulumi:
-const config = new pulumi.Config();
-const instanceType = config.get("instanceType") || "t3.micro";
-```
+> **Code examples:** [TypeScript](examples-ts.md#parameters) | [Go](examples-go.md#parameters) | [Python](examples-python.md#parameters)
 
 #### 2.6 CloudFormation Mappings
 
-Convert mappings to TypeScript objects:
+Convert mappings to language-native data structures (objects, maps, dictionaries).
 
-```typescript
-// CloudFormation:
-// "Mappings": {
-//   "RegionMap": {
-//     "us-east-1": { "AMI": "ami-12345" },
-//     "us-west-2": { "AMI": "ami-67890" }
-//   }
-// }
-
-// Pulumi:
-const regionMap: Record<string, { ami: string }> = {
-  "us-east-1": { ami: "ami-12345" },
-  "us-west-2": { ami: "ami-67890" },
-};
-const ami = regionMap[aws.config.region!].ami;
-```
+> **Code examples:** [TypeScript](examples-ts.md#mappings) | [Go](examples-go.md#mappings) | [Python](examples-python.md#mappings)
 
 #### 2.7 Custom Resources
 
@@ -220,17 +161,11 @@ CloudFormation Custom Resources (`AWS::CloudFormation::CustomResource` or `Custo
 2. **Find native replacement**: Check if Pulumi has a native resource that provides the same functionality
 3. **If no replacement**: Document in the migration report that manual implementation is needed
 
-#### 2.8 TypeScript Output Handling
+#### 2.8 Output Handling
 
-aws-native outputs often include undefined. Avoid `!` non-null assertions. Always safely unwrap with `.apply()`:
+aws-native outputs may include undefined/nil/None values. Always safely unwrap with `.apply()` transforms rather than using non-null assertions.
 
-```typescript
-// WRONG
-functionName: lambdaFunction.functionName!,
-
-// CORRECT
-functionName: lambdaFunction.functionName.apply(name => name || ""),
-```
+> **Code examples:** [TypeScript](examples-ts.md#output-handling) | [Go](examples-go.md#output-handling) | [Python](examples-python.md#output-handling)
 
 ### 3. RESOURCE IMPORT
 
@@ -277,7 +212,7 @@ When performing a migration, always produce:
 
 1. **Overview** (high-level description)
 2. **Migration Plan Summary**
-3. **Pulumi Code Outputs** (TypeScript; organized by file)
+3. **Pulumi Code Outputs** (organized by file)
 4. **Resource Mapping Table**:
 
 | CloudFormation Logical ID | CFN Type | Pulumi Type | Provider |

@@ -61,10 +61,23 @@ pulumi plugin run cdk2pulumi -- --assembly path/to/cdk.out
    pulumi config set external.<stack>.<output> <value>
    ```
 
-5. **Convert the Pulumi YAML program** to the target language:
+5. **Convert the Pulumi YAML program** to your target language:
 
    ```bash
+   # TypeScript
    pulumi convert --from yaml --generate-only --language typescript --out ./generated-program
+
+   # Go
+   pulumi convert --from yaml --generate-only --language go --out ./generated-program
+
+   # Python
+   pulumi convert --from yaml --generate-only --language python --out ./generated-program
+
+   # C#
+   pulumi convert --from yaml --generate-only --language csharp --out ./generated-program
+
+   # Java
+   pulumi convert --from yaml --generate-only --language java --out ./generated-program
    ```
 
    > NOTE: after converting to another language you need to remove or rename the `Pulumi.yaml` file, otherwise it will still be treated as the main application

@@ -27,11 +27,11 @@ const storageAccount = new azure_native.storage.StorageAccount("storageAccount",
 **Python:**
 
 ```python
-storage_account = storage.StorageAccount("storageAccount",
+storage_account = azure_native.storage.StorageAccount("storageAccount",
     account_name="mystorageaccount",
     resource_group_name="myResourceGroup",
     location="eastus",
-    sku=storage.SkuArgs(name="Standard_LRS"),
+    sku=azure_native.storage.SkuArgs(name="Standard_LRS"),
     kind="StorageV2",
     opts=pulumi.ResourceOptions(
         import_="/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Storage/storageAccounts/mystorageaccount"
@@ -50,6 +50,9 @@ storageAccount, err := storage.NewStorageAccount(ctx, "storageAccount", &storage
     },
     Kind: pulumi.String("StorageV2"),
 }, pulumi.Import(pulumi.ID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Storage/storageAccounts/mystorageaccount")))
+if err != nil {
+    return err
+}
 ```
 
 **C#:**
@@ -132,14 +135,35 @@ For child resources, the pattern extends:
 
 ### Method 1: Convention-Based Generation
 
-```typescript
-// Pattern: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}
+**TypeScript:**
 
+```typescript
 const subscriptionId = "00000000-0000-0000-0000-000000000000";
 const resourceGroupName = "myResourceGroup";
 const storageAccountName = "mystorageaccount";
 
 const importId = `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}`;
+```
+
+**Python:**
+
+```python
+subscription_id = "00000000-0000-0000-0000-000000000000"
+resource_group_name = "myResourceGroup"
+storage_account_name = "mystorageaccount"
+
+import_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}/providers/Microsoft.Storage/storageAccounts/{storage_account_name}"
+```
+
+**Go:**
+
+```go
+subscriptionId := "00000000-0000-0000-0000-000000000000"
+resourceGroupName := "myResourceGroup"
+storageAccountName := "mystorageaccount"
+
+importId := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Storage/storageAccounts/%s",
+    subscriptionId, resourceGroupName, storageAccountName)
 ```
 
 ### Method 2: Query Azure API
@@ -194,7 +218,7 @@ Some ARM properties are separate resources in Pulumi and must be imported separa
 }
 ```
 
-**Pulumi (Separate Resource):**
+**TypeScript (Separate Resource):**
 
 ```typescript
 // Main Web App
@@ -216,6 +240,56 @@ const appSettings = new azure_native.web.WebAppApplicationSettings("appSettings"
 }, {
     import: "/subscriptions/.../Microsoft.Web/sites/mywebapp/config/appsettings"
 });
+```
+
+**Python (Separate Resource):**
+
+```python
+# Main Web App
+web_app = azure_native.web.WebApp("webApp",
+    name="mywebapp",
+    resource_group_name=resource_group.name,
+    # ... other properties
+    opts=pulumi.ResourceOptions(
+        import_="/subscriptions/.../Microsoft.Web/sites/mywebapp"
+    ))
+
+# Application Settings (separate resource)
+app_settings = azure_native.web.WebAppApplicationSettings("appSettings",
+    name=web_app.name,
+    resource_group_name=resource_group.name,
+    properties={
+        "WEBSITE_NODE_DEFAULT_VERSION": "14.17.0",
+    },
+    opts=pulumi.ResourceOptions(
+        import_="/subscriptions/.../Microsoft.Web/sites/mywebapp/config/appsettings"
+    ))
+```
+
+**Go (Separate Resource):**
+
+```go
+// Main Web App
+webApp, err := web.NewWebApp(ctx, "webApp", &web.WebAppArgs{
+    Name:              pulumi.String("mywebapp"),
+    ResourceGroupName: resourceGroup.Name,
+    // ... other properties
+}, pulumi.Import(pulumi.ID("/subscriptions/.../Microsoft.Web/sites/mywebapp")))
+if err != nil {
+    return err
+}
+
+// Application Settings (separate resource)
+_, err = web.NewWebAppApplicationSettings(ctx, "appSettings", &web.WebAppApplicationSettingsArgs{
+    Name:              webApp.Name,
+    ResourceGroupName: resourceGroup.Name,
+    Properties: pulumi.StringMap{
+        "WEBSITE_NODE_DEFAULT_VERSION": pulumi.String("14.17.0"),
+    },
+}, pulumi.Import(pulumi.ID("/subscriptions/.../Microsoft.Web/sites/mywebapp/config/appsettings")))
+if err != nil {
+    return err
+}
 ```
 
 **Other common examples:**
@@ -255,6 +329,8 @@ Azure will return many default values it has set dynamically that are not repres
 
 **Resolution:** These properties were set by Azure with default values but are missing from your Pulumi code. **ADD them to your code:**
 
+**TypeScript:**
+
 ```typescript
 const storageAccount = new azure_native.storage.StorageAccount("storageAccount", {
     accountName: "mystorageaccount",
@@ -265,6 +341,32 @@ const storageAccount = new azure_native.storage.StorageAccount("storageAccount",
 }, {
     import: "...",
 });
+```
+
+**Python:**
+
+```python
+storage_account = azure_native.storage.StorageAccount("storageAccount",
+    account_name="mystorageaccount",
+    resource_group_name=resource_group.name,
+    # ... other properties
+    minimum_tls_version=azure_native.storage.MinimumTlsVersion.TLS1_2,  # ADD this
+    allow_blob_public_access=False,  # ADD this
+    opts=pulumi.ResourceOptions(
+        import_="...",
+    ))
+```
+
+**Go:**
+
+```go
+storageAccount, err := storage.NewStorageAccount(ctx, "storageAccount", &storage.StorageAccountArgs{
+    AccountName:       pulumi.String("mystorageaccount"),
+    ResourceGroupName: resourceGroup.Name,
+    // ... other properties
+    MinimumTlsVersion:    pulumi.String("TLS1_2"),    // ADD this
+    AllowBlobPublicAccess: pulumi.Bool(false),         // ADD this
+}, pulumi.Import(pulumi.ID("...")))
 ```
 
 **How to find the correct values:**
@@ -296,6 +398,8 @@ az storage account show \
 
 **Resolution:** These are **computed/read-only properties** set by Azure. Use `ignoreChanges` for these properties ONLY:
 
+**TypeScript:**
+
 ```typescript
 const storageAccount = new azure_native.storage.StorageAccount("storageAccount", {
     // ... properties
@@ -303,6 +407,26 @@ const storageAccount = new azure_native.storage.StorageAccount("storageAccount",
     import: "...",
     ignoreChanges: ["creationTime", "statusOfPrimary"],
 });
+```
+
+**Python:**
+
+```python
+storage_account = azure_native.storage.StorageAccount("storageAccount",
+    # ... properties
+    opts=pulumi.ResourceOptions(
+        import_="...",
+        ignore_changes=["creationTime", "statusOfPrimary"],
+    ))
+```
+
+**Go:**
+
+```go
+storageAccount, err := storage.NewStorageAccount(ctx, "storageAccount", &storage.StorageAccountArgs{
+    // ... properties
+}, pulumi.Import(pulumi.ID("...")),
+   pulumi.IgnoreChanges([]string{"creationTime", "statusOfPrimary"}))
 ```
 
 **CRITICAL:** Only use `ignoreChanges` for properties that:
@@ -336,11 +460,13 @@ az network vnet show \
 
 **Step 2:** Determine the correct value:
 
-- If Azure shows `true`, update your code to `true`
+- If Azure shows `true`, update your code to match
 - If the ARM template specified `false`, investigate why Azure has `true` (manual change?)
 - Match the **desired state** (what you want), not necessarily what's in Azure
 
 **Step 3:** Update your code to match the desired state:
+
+**TypeScript:**
 
 ```typescript
 const vnet = new azure_native.network.VirtualNetwork("vnet", {
@@ -350,6 +476,28 @@ const vnet = new azure_native.network.VirtualNetwork("vnet", {
 }, {
     import: "...",
 });
+```
+
+**Python:**
+
+```python
+vnet = azure_native.network.VirtualNetwork("vnet",
+    virtual_network_name="myVNet",
+    resource_group_name=resource_group.name,
+    enable_ddos_protection=True,  # Match actual Azure state if that's desired
+    opts=pulumi.ResourceOptions(
+        import_="...",
+    ))
+```
+
+**Go:**
+
+```go
+vnet, err := network.NewVirtualNetwork(ctx, "vnet", &network.VirtualNetworkArgs{
+    VirtualNetworkName:   pulumi.String("myVNet"),
+    ResourceGroupName:    resourceGroup.Name,
+    EnableDdosProtection: pulumi.Bool(true), // Match actual Azure state if that's desired
+}, pulumi.Import(pulumi.ID("...")))
 ```
 
 ## DEBUGGING WORKFLOW FOR DIFFS

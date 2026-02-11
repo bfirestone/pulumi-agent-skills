@@ -127,8 +127,8 @@ az resource show \
 #### Key Conversion Principles
 
 1. **Provider Strategy**:
-   - **Default**: Use `@pulumi/azure-native` for full Azure Resource Manager API coverage
-   - **Fallback**: Use `@pulumi/azure` (classic provider) when azure-native doesn't support specific features or when you need simplified abstractions
+   - **Default**: Use the azure-native provider for full Azure Resource Manager API coverage
+   - **Fallback**: Use the azure (classic) provider when azure-native doesn't support specific features or when you need simplified abstractions
 
    **Documentation:**
    - [Azure Native Provider](https://www.pulumi.com/registry/packages/azure-native/)
@@ -137,8 +137,8 @@ az resource show \
 2. **Language Support**:
    - **TypeScript/JavaScript**: Most common, excellent IDE support
    - **Python**: Great for data teams and ML workflows
-   - **C#**: Natural fit for .NET teams
    - **Go**: High performance, strong typing
+   - **C#**: Natural fit for .NET teams
    - **Java**: Enterprise Java teams
    - **YAML**: Simple declarative approach
    - Choose based on user preference or existing codebase
@@ -150,7 +150,11 @@ az resource show \
 
 #### ARM Template Conversion Patterns
 
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
+
 ##### Basic Resource Conversion
+
+Map ARM resource type, name, location, SKU, kind, and properties to the corresponding Pulumi resource constructor and arguments.
 
 **ARM Template:**
 
@@ -170,30 +174,11 @@ az resource show \
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-import * as pulumi from "@pulumi/pulumi";
-import * as azure_native from "@pulumi/azure-native";
-
-const config = new pulumi.Config();
-const storageAccountName = config.require("storageAccountName");
-const location = config.require("location");
-const resourceGroupName = config.require("resourceGroupName");
-
-const storageAccount = new azure_native.storage.StorageAccount("storageAccount", {
-    accountName: storageAccountName,
-    location: location,
-    resourceGroupName: resourceGroupName,
-    sku: {
-        name: azure_native.storage.SkuName.Standard_LRS,
-    },
-    kind: azure_native.storage.Kind.StorageV2,
-    enableHttpsTrafficOnly: true,
-});
-```
+**Pulumi conversion:** Create a `StorageAccount` resource from the azure-native storage module. Map ARM parameters to Pulumi config values, and ARM properties to resource arguments.
 
 ##### ARM Parameters → Pulumi Config
+
+Convert ARM template parameters to Pulumi config lookups. Map parameter types (`string`, `int`, `bool`, `securestring`) to corresponding config methods. Use default values where specified. Use secret config for `securestring` parameters.
 
 **ARM Template:**
 
@@ -224,17 +209,9 @@ const storageAccount = new azure_native.storage.StorageAccount("storageAccount",
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-const config = new pulumi.Config();
-const location = config.get("location") || "eastus";
-const instanceCount = config.getNumber("instanceCount") || 2;
-const enableBackup = config.getBoolean("enableBackup") ?? true;
-const secretValue = config.requireSecret("secretValue"); // Returns Output<string>
-```
-
 ##### ARM Variables → Pulumi Variables
+
+Convert ARM template variables to local program variables. Replace ARM functions like `concat()` with string interpolation/concatenation. For `uniqueString()`, use the stack name or generate a hash.
 
 **ARM Template:**
 
@@ -247,23 +224,9 @@ const secretValue = config.requireSecret("secretValue"); // Returns Output<strin
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-import * as pulumi from "@pulumi/pulumi";
-
-const config = new pulumi.Config();
-const prefix = config.require("prefix");
-const resourceGroupId = config.require("resourceGroupId");
-
-// Simple variable
-const webAppName = `${prefix}-webapp`;
-
-// For uniqueString equivalent, use stack name or generate hash
-const storageAccountName = `storage${resourceGroupId}`.toLowerCase();
-```
-
 ##### ARM Copy Loops → Pulumi Loops
+
+Convert ARM `copy` loops to native language loops (for/range). Map `copyIndex()` to the loop variable.
 
 **ARM Template:**
 
@@ -282,24 +245,9 @@ const storageAccountName = `storage${resourceGroupId}`.toLowerCase();
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-const config = new pulumi.Config();
-const subnetCount = config.getNumber("subnetCount") || 3;
-
-const subnets: azure_native.network.Subnet[] = [];
-for (let i = 0; i < subnetCount; i++) {
-    subnets.push(new azure_native.network.Subnet(`subnet-${i}`, {
-        subnetName: `subnet-${i}`,
-        virtualNetworkName: vnet.name,
-        resourceGroupName: resourceGroup.name,
-        addressPrefix: `10.0.${i}.0/24`,
-    }));
-}
-```
-
 ##### ARM Conditional Resources → Pulumi Conditionals
+
+Convert ARM `condition` property to native language if/else conditionals. Handle optional resource references safely (the resource may not exist when the condition is false).
 
 **ARM Template:**
 
@@ -313,26 +261,9 @@ for (let i = 0; i < subnetCount; i++) {
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-const config = new pulumi.Config();
-const createPublicIP = config.getBoolean("createPublicIP") ?? false;
-
-let publicIP: azure_native.network.PublicIPAddress | undefined;
-if (createPublicIP) {
-    publicIP = new azure_native.network.PublicIPAddress("publicIP", {
-        publicIpAddressName: publicIPName,
-        location: location,
-        resourceGroupName: resourceGroup.name,
-    });
-}
-
-// Handle optional references
-const publicIPId = publicIP ? publicIP.id : pulumi.output(undefined);
-```
-
 ##### ARM DependsOn → Pulumi Dependencies
+
+ARM `dependsOn` is usually not needed in Pulumi because property references create implicit dependencies. Use explicit `dependsOn` resource option only when there's no property reference linking resources.
 
 **ARM Template:**
 
@@ -347,27 +278,9 @@ const publicIPId = publicIP ? publicIP.id : pulumi.output(undefined);
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-// Implicit dependency (preferred)
-const webApp = new azure_native.web.WebApp("webApp", {
-    name: webAppName,
-    resourceGroupName: resourceGroup.name,
-    serverFarmId: appServicePlan.id, // Implicit dependency through property reference
-});
-
-// Explicit dependency (when needed)
-const webApp = new azure_native.web.WebApp("webApp", {
-    name: webAppName,
-    resourceGroupName: resourceGroup.name,
-    serverFarmId: appServicePlan.id,
-}, {
-    dependsOn: [appServicePlan], // Explicit dependency
-});
-```
-
 ##### Nested Templates → Pulumi Component Resources
+
+Convert ARM nested/linked templates (`Microsoft.Resources/deployments`) to Pulumi ComponentResource classes. Group related resources under a single component for reusability and encapsulation.
 
 **ARM Template:**
 
@@ -385,47 +298,9 @@ const webApp = new azure_native.web.WebApp("webApp", {
 }
 ```
 
-**Pulumi Approach:**
-
-Instead of nested templates, use Pulumi ComponentResource to group related resources:
-
-```typescript
-class NetworkComponent extends pulumi.ComponentResource {
-    public readonly vnet: azure_native.network.VirtualNetwork;
-    public readonly subnets: azure_native.network.Subnet[];
-
-    constructor(name: string, args: NetworkComponentArgs, opts?: pulumi.ComponentResourceOptions) {
-        super("custom:azure:NetworkComponent", name, {}, opts);
-
-        const defaultOptions = { parent: this };
-
-        this.vnet = new azure_native.network.VirtualNetwork(`${name}-vnet`, {
-            virtualNetworkName: args.vnetName,
-            resourceGroupName: args.resourceGroupName,
-            location: args.location,
-            addressSpace: {
-                addressPrefixes: [args.addressPrefix],
-            },
-        }, defaultOptions);
-
-        this.subnets = args.subnets.map((subnet, i) =>
-            new azure_native.network.Subnet(`${name}-subnet-${i}`, {
-                subnetName: subnet.name,
-                virtualNetworkName: this.vnet.name,
-                resourceGroupName: args.resourceGroupName,
-                addressPrefix: subnet.addressPrefix,
-            }, defaultOptions)
-        );
-
-        this.registerOutputs({
-            vnetId: this.vnet.id,
-            subnetIds: this.subnets.map(s => s.id),
-        });
-    }
-}
-```
-
 ##### ARM Outputs → Pulumi Exports
+
+Convert ARM template `outputs` to Pulumi stack exports. Reference resource properties directly instead of using `resourceId()` functions.
 
 **ARM Template:**
 
@@ -444,18 +319,15 @@ class NetworkComponent extends pulumi.ComponentResource {
 }
 ```
 
-**Pulumi TypeScript:**
-
-```typescript
-export const storageAccountName = storageAccount.name;
-export const storageAccountId = storageAccount.id;
-```
-
 #### Azure Classic Provider Examples
 
-In some cases, you may need to use the Azure Classic provider (`@pulumi/azure`) instead of Azure Native. The Classic provider offers simplified abstractions and may be easier to work with for certain resources.
+In some cases, you may need to use the Azure Classic provider instead of Azure Native. The Classic provider offers simplified abstractions and may be easier to work with for certain resources.
+
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ##### Virtual Network with Classic Provider
+
+The Classic provider allows defining subnets inline within the VirtualNetwork resource, which can be simpler than managing them as separate resources.
 
 **ARM Template:**
 
@@ -489,38 +361,9 @@ In some cases, you may need to use the Azure Classic provider (`@pulumi/azure`) 
 }
 ```
 
-**Pulumi TypeScript (Classic Provider):**
-
-```typescript
-import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
-
-const config = new pulumi.Config();
-const vnetName = config.require("vnetName");
-const location = config.require("location");
-const resourceGroupName = config.require("resourceGroupName");
-
-const vnet = new azure.network.VirtualNetwork("vnet", {
-    name: vnetName,
-    location: location,
-    resourceGroupName: resourceGroupName,
-    addressSpaces: ["10.0.0.0/16"],
-    subnets: [
-        {
-            name: "default",
-            addressPrefix: "10.0.1.0/24",
-        },
-        {
-            name: "apps",
-            addressPrefix: "10.0.2.0/24",
-        },
-    ],
-});
-```
-
-**Note:** The Classic provider allows defining subnets inline within the VirtualNetwork resource, which can be simpler than managing them as separate resources.
-
 ##### App Service Plan and Web App with Classic Provider
+
+The Classic provider has dedicated resources like `LinuxWebApp` and `WindowsWebApp` that provide better type safety and clearer configuration options compared to the generic `WebApp` resource.
 
 **ARM Template:**
 
@@ -568,92 +411,30 @@ const vnet = new azure.network.VirtualNetwork("vnet", {
 }
 ```
 
-**Pulumi TypeScript (Classic Provider):**
-
-```typescript
-import * as pulumi from "@pulumi/pulumi";
-import * as azure from "@pulumi/azure";
-
-const config = new pulumi.Config();
-const appServicePlanName = config.require("appServicePlanName");
-const webAppName = config.require("webAppName");
-const location = config.require("location");
-const resourceGroupName = config.require("resourceGroupName");
-
-const appServicePlan = new azure.appservice.ServicePlan("appServicePlan", {
-    name: appServicePlanName,
-    location: location,
-    resourceGroupName: resourceGroupName,
-    osType: "Linux",
-    skuName: "B1",
-});
-
-const webApp = new azure.appservice.LinuxWebApp("webApp", {
-    name: webAppName,
-    location: location,
-    resourceGroupName: resourceGroupName,
-    servicePlanId: appServicePlan.id,
-    siteConfig: {
-        applicationStack: {
-            nodeVersion: "18-lts",
-        },
-    },
-    appSettings: {
-        "WEBSITE_NODE_DEFAULT_VERSION": "~18",
-    },
-});
-```
-
-**Note:** The Classic provider has dedicated resources like `LinuxWebApp` and `WindowsWebApp` that provide better type safety and clearer configuration options compared to the generic `WebApp` resource.
-
 #### Handling Azure-Specific Considerations
 
-##### TypeScript Output Handling
+##### Output Handling
 
-Azure Native outputs often include undefined. Avoid `!` non-null assertions. Always safely unwrap with `.apply()`:
+Azure Native outputs may include undefined/nil/None values. Always safely unwrap output values using the language-appropriate apply/transform pattern before using them in string interpolation or other operations.
 
-```typescript
-// ❌ WRONG - Will cause TypeScript errors
-const webAppUrl = `https://${webApp.defaultHostName!}`;
-
-// ✅ CORRECT - Handle undefined safely
-const webAppUrl = webApp.defaultHostName.apply(hostname =>
-    hostname ? `https://${hostname}` : ""
-);
-```
+> **Code examples:** [TypeScript](examples-ts.md) | [Go](examples-go.md) | [Python](examples-python.md)
 
 ##### Resource Naming Conventions
 
-ARM template `name` property maps to specific naming fields in Pulumi:
-
-```typescript
-// ARM: "name": "myStorageAccount"
-// Pulumi:
-new azure_native.storage.StorageAccount("logicalName", {
-    accountName: "mystorageaccount", // Actual Azure resource name
-    // ...
-});
-```
+ARM template `name` property maps to specific naming fields in Pulumi. The first argument to a Pulumi resource constructor is the **logical name** (used for state tracking), while a separate property (e.g., `accountName`, `name`) sets the **actual Azure resource name**.
 
 ##### API Versions
 
-ARM templates require explicit API versions. Pulumi providers use recent stable API versions by default:
-
-```json
-// ARM: "apiVersion": "2023-01-01"
-// Pulumi: API version is embedded in the provider
-```
-
-Check the Pulumi Registry documentation for which API version each resource uses.
+ARM templates require explicit API versions. Pulumi providers use recent stable API versions by default. Check the Pulumi Registry documentation for which API version each resource uses.
 
 #### Common Pitfalls to Avoid
 
-- ❌ Not handling Output types properly (missing `.apply()` in TypeScript)
-- ❌ Assuming ARM property names match Pulumi property names exactly
-- ❌ Using `azure` provider when `azure-native` is available
-- ❌ Missing resource dependencies in conversion
-- ❌ Not preserving ARM template conditionals and loops
-- ❌ Forgetting to convert ARM functions like `concat()`, `uniqueString()`, etc.
+- Not handling Output types properly (missing apply/unwrap patterns)
+- Assuming ARM property names match Pulumi property names exactly
+- Using the azure (classic) provider when azure-native is available
+- Missing resource dependencies in conversion
+- Not preserving ARM template conditionals and loops
+- Forgetting to convert ARM functions like `concat()`, `uniqueString()`, etc.
 
 ### 3. RESOURCE IMPORT (EXISTING RESOURCES) - OPTIONAL
 
@@ -672,7 +453,7 @@ After conversion, you can optionally import existing resources to be managed by 
 #### Key Import Principles
 
 1. **Inline Import Approach**:
-   - Use `import` resource option with Azure Resource IDs
+   - Use the `import` resource option with Azure Resource IDs
    - No separate import tool (unlike `pulumi-cdk-importer`)
 
 2. **Azure Resource IDs**:
@@ -746,7 +527,7 @@ When performing a migration, always produce:
    - ARM template resources identified
    - Conversion strategy (language, providers)
    - Import approach (if applicable)
-3. **Pulumi Code Outputs** (organized by file)
+3. **Pulumi Code Outputs** (organized by file, in the user's target language)
    - Main program file
    - Component resources (if any)
    - Configuration instructions

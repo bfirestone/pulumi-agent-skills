@@ -9,7 +9,7 @@ First establish scope and plan the migration by working out with the user:
 
 - where the Terraform sources are (`${terraform_dir}`)
 - where the migrated Pulumi project lives (`${pulumi_dir}`)
-- what is the target Pulumi language (such as TypeScript, Python, YAML)
+- what is the target Pulumi language (such as TypeScript, Python, Go, C#, YAML)
 - whether migration aims to setup Pulumi stack states, or only translate source code
 
 Confirm the plan with the user before proceeding.
